@@ -12,7 +12,7 @@ docker build --cache-from=$IMAGE:$CI_COMMIT_REF_SLUG -t $IMAGE:$CI_COMMIT_REF_SL
 docker push $IMAGE:$CI_COMMIT_REF_SLUG
 
 docker tag $IMAGE:$CI_COMMIT_REF_SLUG $IMAGE:$PG_VERSION-$PATRONI_VERSION
-docker push $IMAGE:latest
+docker push $IMAGE:$PG_VERSION-$PATRONI_VERSION
 
 docker tag $IMAGE:$CI_COMMIT_REF_SLUG $IMAGE:latest
 docker push $IMAGE:latest
