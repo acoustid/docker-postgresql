@@ -9,7 +9,7 @@ RUN apt-get update && \
         python-virtualenv \
         libpq-dev \
         git \
-        postgresql-server-dev-all
+        postgresql-server-dev-$PG_MAJOR
 
 RUN virtualenv /opt/patroni
 RUN /opt/patroni/bin/pip install requests psycopg2
@@ -25,8 +25,13 @@ RUN git clone https://github.com/acoustid/pg_acoustid.git /opt/pg_acoustid && \
 
 FROM postgres:${PG_VERSION}
 
-RUN apt-get update && apt-get install -y python
+RUN apt-get update && \
+    apt-get install -y \
+        python \
+        postgresql-$PG_MAJOR-slony1-2 \
+        slony1-2-bin
+
 COPY --from=builder /opt/patroni/ /opt/patroni/
-COPY --from=builder /usr/lib/postgresql/11/lib/acoustid.so /usr/lib/postgresql/11/lib/
-COPY --from=builder /usr/share/postgresql/11/extension/acoustid--1.0.sql /usr/share/postgresql/11/extension/
-COPY --from=builder /usr/lib/postgresql/11/lib/bitcode/acoustid /usr/lib/postgresql/11/lib/bitcode/
+COPY --from=builder /usr/lib/postgresql/$PG_MAJOR/lib/acoustid.so /usr/lib/postgresql/$PG_MAJOR/lib/
+COPY --from=builder /usr/share/postgresql/$PG_MAJOR/extension/acoustid--*.sql /usr/share/postgresql/$PG_MAJOR/extension/
+COPY --from=builder /usr/lib/postgresql/$PG_MAJOR/lib/bitcode/acoustid /usr/lib/postgresql/$PG_MAJOR/lib/bitcode/
