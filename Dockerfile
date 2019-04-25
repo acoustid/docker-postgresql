@@ -1,6 +1,4 @@
-ARG PG_VERSION=latest
-
-FROM postgres:${PG_VERSION} as builder
+FROM postgres:11.2 as builder
 
 RUN apt-get update && \
     apt-get install -y \
@@ -13,24 +11,20 @@ RUN apt-get update && \
 
 RUN virtualenv /opt/patroni
 RUN /opt/patroni/bin/pip install requests psycopg2
+RUN /opt/patroni/bin/pip install patroni[etcd]
 
-ARG PATRONI_VERSION
-RUN /opt/patroni/bin/pip install patroni[etcd]==${PATRONI_VERSION}
-
-ARG PG_ACOUSTID_VERSION
 RUN git clone https://github.com/acoustid/pg_acoustid.git /opt/pg_acoustid && \
     cd /opt/pg_acoustid && \
     make && \
     make install
 
-FROM postgres:${PG_VERSION}
+FROM postgres:11.2
 
-ARG SLONY_VERSION
 RUN apt-get update && \
     apt-get install -y \
         python \
-        postgresql-$PG_MAJOR-slony1-2=$SLONY_VERSION-\* \
-        slony1-2-bin=$SLONY_VERSION-\*
+        postgresql-$PG_MAJOR-slony1-2 \
+        slony1-2-bin
 
 COPY --from=builder /opt/patroni/ /opt/patroni/
 COPY --from=builder /usr/lib/postgresql/$PG_MAJOR/lib/acoustid.so /usr/lib/postgresql/$PG_MAJOR/lib/
