@@ -15,7 +15,7 @@ else
   PREV_VERSION=$CI_COMMIT_REF_SLUG-pg$PG_VERSION
 fi
 
-docker pull $IMAGE:$PREV_VERSION
+docker pull $IMAGE:$PREV_VERSION || true
 docker build --cache-from=$IMAGE:$PREV_VERSION -t $IMAGE:$VERSION --build-arg=PG_VERSION=$PG_VERSION --build-arg=PATRONI_VERSION=$PATRONI_VERSION .
 docker push $IMAGE:$VERSION
 
