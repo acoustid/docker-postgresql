@@ -29,8 +29,8 @@ ARG SLONY_VERSION
 RUN apt-get update && \
     apt-get install -y \
         python \
-        postgresql-$PG_MAJOR-slony1-2=$SLONY_VERSION\* \
-        slony1-2-bin=$SLONY_VERSION\*
+        postgresql-$PG_MAJOR-slony1-2=$SLONY_VERSION-\* \
+        slony1-2-bin=$SLONY_VERSION-\*
 
 COPY --from=builder /opt/patroni/ /opt/patroni/
 COPY --from=builder /usr/lib/postgresql/$PG_MAJOR/lib/acoustid.so /usr/lib/postgresql/$PG_MAJOR/lib/
