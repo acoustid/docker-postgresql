@@ -2,7 +2,13 @@ ARG PG_VERSION=latest
 
 FROM postgres:${PG_VERSION} as builder
 
-RUN apt-get update && apt-get install -y python python-pip python-virtualenv libpq-dev git
+RUN apt-get update && \
+    apt-get install -y \
+        python \
+        python-pip \
+        python-virtualenv \
+        libpq-dev \
+        postgresql-server-dev-all
 
 RUN virtualenv /opt/patroni
 RUN /opt/patroni/bin/pip install requests psycopg2
