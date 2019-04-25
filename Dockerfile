@@ -27,3 +27,6 @@ FROM postgres:${PG_VERSION}
 
 RUN apt-get update && apt-get install -y python
 COPY --from=builder /opt/patroni/ /opt/patroni/
+COPY --from=builder /usr/lib/postgresql/11/lib/acoustid.so /usr/lib/postgresql/11/lib/
+COPY --from=builder /usr/share/postgresql/11/extension/acoustid--1.0.sql /usr/share/postgresql/11/extension/
+COPY --from=builder /usr/lib/postgresql/11/lib/bitcode/acoustid /usr/lib/postgresql/11/lib/bitcode/
