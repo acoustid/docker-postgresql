@@ -2,18 +2,25 @@
 
 set -ex
 
-PG_VERSION=11.2
-PATRONI_VERSION=1.5.6
+source versions.sh
 
-IMAGE=quay.io/acoustid/postgres-patroni
+IMAGE=quay.io/acoustid/postgresql
 
+if [ -n "$CI_COMMIT_TAG" ]
+then
+  VERSION=$(echo "$CI_COMMIT_TAG" | sed 's/^v//')-pg$PG_VERSION
+  PREV_VERSION=master
+else
+  VERSION=$CI_COMMIT_REF_SLUG-pg$PG_VERSION
+  PREV_VERSION=$CI_COMMIT_REF_SLUG-pg$PG_VERSION
+fi
 
-docker pull $IMAGE:$CI_COMMIT_REF_SLUG || true
-docker build --cache-from=$IMAGE:$CI_COMMIT_REF_SLUG -t $IMAGE:$CI_COMMIT_REF_SLUG --build-arg=PG_VERSION=$PG_VERSION --build-arg=PATRONI_VERSION=$PATRONI_VERSION .
-docker push $IMAGE:$CI_COMMIT_REF_SLUG
+docker pull $IMAGE:$PREV_VERSION
+docker build --cache-from=$IMAGE:$PREV_VERSION -t $IMAGE:$VERSION --build-arg=PG_VERSION=$PG_VERSION --build-arg=PATRONI_VERSION=$PATRONI_VERSION .
+docker push $IMAGE:$VERSION
 
-docker tag $IMAGE:$CI_COMMIT_REF_SLUG $IMAGE:$PG_VERSION-$PATRONI_VERSION
-docker push $IMAGE:$PG_VERSION-$PATRONI_VERSION
-
-docker tag $IMAGE:$CI_COMMIT_REF_SLUG $IMAGE:latest
-docker push $IMAGE:latest
+if [ -n "$CI_COMMIT_TAG" ]
+then
+    docker tag $IMAGE:$CI_COMMIT_REF_SLUG $IMAGE:latest
+    docker push $IMAGE:latest
+fi
