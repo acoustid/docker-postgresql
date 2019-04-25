@@ -9,7 +9,7 @@ RUN apt-get update && \
         python-virtualenv \
         libpq-dev \
         git \
-        postgresql-server-dev-$PG_MAJOR
+        postgresql-server-dev-all
 
 RUN virtualenv /opt/patroni
 RUN /opt/patroni/bin/pip install requests psycopg2
