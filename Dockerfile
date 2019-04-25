@@ -8,6 +8,7 @@ RUN apt-get update && \
         python-pip \
         python-virtualenv \
         libpq-dev \
+        git \
         postgresql-server-dev-all
 
 RUN virtualenv /opt/patroni
