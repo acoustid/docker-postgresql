@@ -8,11 +8,11 @@ IMAGE=quay.io/acoustid/postgresql
 
 if [ -n "$CI_COMMIT_TAG" ]
 then
-  VERSION=$(echo "$CI_COMMIT_TAG" | sed 's/^v//')-pg$PG_VERSION
+  VERSION=$(echo "$CI_COMMIT_TAG" | sed 's/^v//')
   PREV_VERSION=master
 else
-  VERSION=$CI_COMMIT_REF_SLUG-pg$PG_VERSION
-  PREV_VERSION=$CI_COMMIT_REF_SLUG-pg$PG_VERSION
+  VERSION=$CI_COMMIT_REF_SLUG
+  PREV_VERSION=$CI_COMMIT_REF_SLUG
 fi
 
 docker pull $IMAGE:$PREV_VERSION || true
