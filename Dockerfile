@@ -28,5 +28,5 @@ RUN apt-get update && \
 
 COPY --from=builder /opt/patroni/ /opt/patroni/
 COPY --from=builder /usr/lib/postgresql/$PG_MAJOR/lib/acoustid.so /usr/lib/postgresql/$PG_MAJOR/lib/
-COPY --from=builder /usr/share/postgresql/$PG_MAJOR/extension/acoustid--*.sql /usr/share/postgresql/$PG_MAJOR/extension/
+COPY --from=builder /usr/share/postgresql/$PG_MAJOR/extension/acoustid* /usr/share/postgresql/$PG_MAJOR/extension/
 COPY --from=builder /usr/lib/postgresql/$PG_MAJOR/lib/bitcode/acoustid /usr/lib/postgresql/$PG_MAJOR/lib/bitcode/
