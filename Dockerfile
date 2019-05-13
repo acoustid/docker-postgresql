@@ -26,6 +26,8 @@ RUN apt-get update && \
         postgresql-$PG_MAJOR-slony1-2 \
         slony1-2-bin
 
+COPY setup_db.sh /docker-entrypoint-initdb.d/setup_db.sh
+
 COPY --from=builder /opt/patroni/ /opt/patroni/
 COPY --from=builder /usr/lib/postgresql/$PG_MAJOR/lib/acoustid.so /usr/lib/postgresql/$PG_MAJOR/lib/
 COPY --from=builder /usr/share/postgresql/$PG_MAJOR/extension/acoustid* /usr/share/postgresql/$PG_MAJOR/extension/
