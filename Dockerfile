@@ -24,7 +24,8 @@ RUN apt-get update && \
     apt-get install -y \
         python \
         postgresql-$PG_MAJOR-slony1-2 \
-        slony1-2-bin
+        slony1-2-bin \
+        tiny
 
 COPY setup_db.sh /docker-entrypoint-initdb.d/setup_db.sh
 
