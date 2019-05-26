@@ -25,8 +25,9 @@ RUN apt-get update && \
         python \
         postgresql-$PG_MAJOR-slony1-2 \
         slony1-2-bin \
-        dumb-init
-        curl
+        dumb-init \
+        curl \
+        vim
 
 COPY setup_db.sh /docker-entrypoint-initdb.d/setup_db.sh
 
