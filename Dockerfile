@@ -27,6 +27,8 @@ RUN apt-get update && \
         slony1-2-bin \
         dumb-init \
         curl \
+        daemontools \
+        liblz4-tool \
         vim
 
 COPY setup_db.sh /docker-entrypoint-initdb.d/setup_db.sh
