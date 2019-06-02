@@ -34,7 +34,9 @@ RUN apt-get update && \
         daemontools \
         liblz4-tool \
         less \
-        vim
+        vim \
+        lzop \
+        pv
 
 COPY setup_db.sh /docker-entrypoint-initdb.d/setup_db.sh
 
