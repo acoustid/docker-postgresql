@@ -3,6 +3,7 @@ FROM postgres:11.2 as builder
 RUN apt-get update && \
     apt-get install -y \
         python \
+        python3 \
         python-pip \
         python-virtualenv \
         libpq-dev \
@@ -13,7 +14,7 @@ RUN virtualenv /opt/patroni
 RUN /opt/patroni/bin/pip install requests psycopg2
 RUN /opt/patroni/bin/pip install patroni[etcd]
 
-RUN virtualenv /opt/wal-e
+RUN virtualenv -p python3 /opt/wal-e
 RUN /opt/wal-e/bin/pip install wal-e[aws]
 
 RUN git clone https://github.com/acoustid/pg_acoustid.git /opt/pg_acoustid && \
