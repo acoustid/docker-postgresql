@@ -16,6 +16,7 @@ RUN /opt/patroni/bin/pip install patroni[etcd]
 
 RUN virtualenv -p python3 /opt/wal-e
 RUN /opt/wal-e/bin/pip install wal-e[aws]
+RUN sed -i 's/encrypt_key=True/encrypt_key=False/' /opt/wal-e/lib/python3.5/site-packages/wal_e/blobstore/s3/s3_util.py
 
 RUN git clone https://github.com/acoustid/pg_acoustid.git /opt/pg_acoustid && \
     cd /opt/pg_acoustid && \
