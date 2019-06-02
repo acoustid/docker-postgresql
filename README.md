@@ -4,7 +4,7 @@ The image is based on the official "postgres" image, but includes a few other to
 
   * [Slony](http://www.slony.info/)
   * [Patroni](https://github.com/zalando/patroni)
-  * [wall-g](https://github.com/wal-g/wal-g)
+  * [wall-e](https://github.com/wal-e/wal-e)
 
 And also database extensions:
 
