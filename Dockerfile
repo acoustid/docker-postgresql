@@ -26,7 +26,7 @@ RUN git clone https://github.com/acoustid/pg_acoustid.git /opt/pg_acoustid && \
     make && \
     make install
 
-RUN golang:1.13 as stolon
+FROM golang:1.13 as stolon
 
 RUN git clone https://github.com/sorintlab/stolon.git /opt/stolon && \
     cd /opt/stolon && \
