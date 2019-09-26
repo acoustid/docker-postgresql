@@ -11,6 +11,8 @@ RUN git clone https://github.com/sorintlab/stolon.git /opt/stolon && \
 
 FROM postgres:$PG_VERSION as builder
 
+ARG WAL_G_VERSION=master
+
 RUN apt-get update && \
     apt-get install -y \
         python \
@@ -19,6 +21,7 @@ RUN apt-get update && \
         python-virtualenv \
         libpq-dev \
         git \
+        wget \
         postgresql-server-dev-all
 
 RUN virtualenv /opt/patroni
@@ -33,6 +36,11 @@ RUN git clone https://github.com/acoustid/pg_acoustid.git /opt/pg_acoustid && \
     cd /opt/pg_acoustid && \
     make && \
     make install
+
+RUN mkdir -p /opt/wal-g/bin && \
+    cd /opt/wal-g/bin && \
+    wget https://github.com/wal-g/wal-g/releases/download/$WAL_G_VERSION/wal-g.linux-amd64.tar.gz && \
+    tar xvf wal-g.linux-amd64.tar.gz
 
 FROM postgres:$PG_VERSION
 
@@ -59,6 +67,10 @@ COPY --from=builder /usr/lib/postgresql/$PG_MAJOR/lib/bitcode/acoustid /usr/lib/
 COPY --from=builder /opt/wal-e/ /opt/wal-e/
 
 RUN ln -s /opt/wal-e/bin/wal-e /usr/local/bin
+
+COPY --from=builder /opt/wal-g/ /opt/wal-g/
+
+RUN ln -s /opt/wal-g/bin/wal-g /usr/local/bin
 
 COPY --from=builder /opt/patroni/ /opt/patroni/
 
