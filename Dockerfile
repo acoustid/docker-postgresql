@@ -1,3 +1,5 @@
+ARG PG_VERSION=latest
+
 FROM golang:latest as stolon
 
 ARG STOLON_VERSION=master
@@ -6,8 +8,6 @@ RUN git clone https://github.com/sorintlab/stolon.git /opt/stolon && \
     cd /opt/stolon && \
     git checkout $STOLON_VERSION && \
     ./build
-
-ARG PG_VERSION=latest
 
 FROM postgres:$PG_VERSION as builder
 
