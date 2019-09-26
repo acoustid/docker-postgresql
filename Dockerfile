@@ -1,4 +1,7 @@
-FROM postgres:11.2 as builder
+ARG PG_VERSION=latest
+ARG STOLON_VERSION=master
+
+FROM postgres:$PG_VERSION as builder
 
 RUN apt-get update && \
     apt-get install -y \
@@ -23,7 +26,14 @@ RUN git clone https://github.com/acoustid/pg_acoustid.git /opt/pg_acoustid && \
     make && \
     make install
 
-FROM postgres:11.2
+RUN golang:1.13 as stolon
+
+RUN git clone https://github.com/sorintlab/stolon.git /opt/stolon && \
+    cd /opt/stolon && \
+    git checkout v$STOLON_VERSION && \
+    ./build
+
+FROM postgres:$PG_VERSION
 
 RUN apt-get update && \
     apt-get install -y \
@@ -42,12 +52,22 @@ RUN apt-get update && \
 COPY setup_db.sh /docker-entrypoint-initdb.d/setup_db.sh
 
 COPY --from=builder /opt/patroni/ /opt/patroni/
+
 COPY --from=builder /opt/wal-e/ /opt/wal-e/
+
 COPY --from=builder /usr/lib/postgresql/$PG_MAJOR/lib/acoustid.so /usr/lib/postgresql/$PG_MAJOR/lib/
 COPY --from=builder /usr/share/postgresql/$PG_MAJOR/extension/acoustid* /usr/share/postgresql/$PG_MAJOR/extension/
 COPY --from=builder /usr/lib/postgresql/$PG_MAJOR/lib/bitcode/acoustid /usr/lib/postgresql/$PG_MAJOR/lib/bitcode/
 
+COPY --from=stolon /opt/stolon/bin/ /opt/stolon/bin/
+
+RUN ln -s /opt/stolon/stolon-keeper /usr/local/bin && \
+    ln -s /opt/stolon/stolon-sentinel /usr/local/bin && \
+    ln -s /opt/stolon/stolon-proxy /usr/local/bin && \
+    ln -s /opt/stolon/stolonctl /usr/local/bin
+
 RUN ln -s /opt/patroni/bin/patroni /usr/local/bin && \
     ln -s /opt/patroni/bin/patronictl /usr/local/bin && \
-    ln -s /opt/patroni/bin/patroni_wale_restore /usr/local/bin && \
-    ln -s /opt/wal-e/bin/wal-e /usr/local/bin
+    ln -s /opt/patroni/bin/patroni_wale_restore /usr/local/bin
+
+RUN ln -s /opt/wal-e/bin/wal-e /usr/local/bin

@@ -1,0 +1,21 @@
+name: Build
+on: [push]
+jobs:
+
+  docker:
+    name: Build Docker image
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+
+    - name: Check out code
+      uses: actions/checkout@v1
+
+    - name: Build Docker image
+      run: ./ci/build-image.sh
+
+    - name: Push Docker image
+      run: ./ci/push-image.sh
+      env:
+        QUAY_USERNAME: ${{ secrets.QUAY_USERNAME }}
+        QUAY_PASSWORD: ${{ secrets.QUAY_PASSWORD }}
