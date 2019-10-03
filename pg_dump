@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+
+if test -n "$PGUSERFILE" && test -z "$PGUSER"
+then
+    export PGUSER=$(cat "$PGUSERFILE")
+fi
+
+if test -n "$PGPASSWORDFILE" && test -z "$PGPASSWORD"
+then
+    export PGPASSWORD=$(cat "$PGPASSWORDFILE")
+fi
+
+exec pg_dump "$@"

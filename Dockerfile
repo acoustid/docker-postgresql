@@ -60,6 +60,8 @@ RUN apt-get update && \
 
 COPY setup_db.sh /docker-entrypoint-initdb.d/setup_db.sh
 
+COPY psql pg_dump /usr/local/bin/
+
 COPY --from=builder /usr/lib/postgresql/$PG_MAJOR/lib/acoustid.so /usr/lib/postgresql/$PG_MAJOR/lib/
 COPY --from=builder /usr/share/postgresql/$PG_MAJOR/extension/acoustid* /usr/share/postgresql/$PG_MAJOR/extension/
 COPY --from=builder /usr/lib/postgresql/$PG_MAJOR/lib/bitcode/acoustid /usr/lib/postgresql/$PG_MAJOR/lib/bitcode/
