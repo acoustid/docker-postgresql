@@ -10,4 +10,4 @@ then
     export PGPASSWORD=$(cat "$PGPASSWORDFILE")
 fi
 
-exec psql "$@"
+exec /usr/bin/psql "$@"

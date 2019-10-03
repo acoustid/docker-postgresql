@@ -10,4 +10,4 @@ then
     export PGPASSWORD=$(cat "$PGPASSWORDFILE")
 fi
 
-exec pg_dump "$@"
+exec /usr/bin/pg_dump "$@"
