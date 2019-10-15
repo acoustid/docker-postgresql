@@ -66,7 +66,7 @@ RUN apt-get update && \
 
 COPY setup_db.sh /docker-entrypoint-initdb.d/setup_db.sh
 
-COPY psql pg_dump /usr/local/bin/
+COPY psql pg_dump postgres_exporter /usr/local/bin/
 
 COPY --from=builder /usr/lib/postgresql/$PG_MAJOR/lib/acoustid.so /usr/lib/postgresql/$PG_MAJOR/lib/
 COPY --from=builder /usr/share/postgresql/$PG_MAJOR/extension/acoustid* /usr/share/postgresql/$PG_MAJOR/extension/
@@ -87,8 +87,6 @@ RUN ln -s /opt/patroni/bin/patroni /usr/local/bin && \
     ln -s /opt/patroni/bin/patroni_wale_restore /usr/local/bin
 
 COPY --from=builder /opt/postgres_exporter/bin/ /opt/postgres_exporter/bin/
-
-RUN ln -s /opt/postgres_exporter/bin/postgres_exporter /usr/local/bin
 
 COPY --from=stolon /opt/stolon/bin/ /opt/stolon/bin/
 
