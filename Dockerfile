@@ -11,7 +11,8 @@ RUN git clone https://github.com/sorintlab/stolon.git /opt/stolon && \
 
 FROM postgres:$PG_VERSION as builder
 
-ARG WAL_G_VERSION=master
+ARG WAL_G_VERSION=
+ARG POSTGRES_EXPORTER_VERSION=
 
 RUN apt-get update && \
     apt-get install -y \
@@ -41,6 +42,11 @@ RUN mkdir -p /opt/wal-g/bin && \
     cd /opt/wal-g/bin && \
     wget https://github.com/wal-g/wal-g/releases/download/$WAL_G_VERSION/wal-g.linux-amd64.tar.gz && \
     tar xvf wal-g.linux-amd64.tar.gz
+
+RUN mkdir -p /opt/postgres_exporter/bin && \
+    cd /opt/postgres_exporter/bin && \
+    wget https://github.com/wrouesnel/postgres_exporter/releases/download/${POSTGRES_EXPORTER_VERSION}/postgres_exporter_${POSTGRES_EXPORTER_VERSION}_linux-amd64.tar.gz && \
+    tar xvf postgres_exporter_${POSTGRES_EXPORTER_VERSION}_linux-amd64.tar.gz
 
 FROM postgres:$PG_VERSION
 
@@ -79,6 +85,10 @@ COPY --from=builder /opt/patroni/ /opt/patroni/
 RUN ln -s /opt/patroni/bin/patroni /usr/local/bin && \
     ln -s /opt/patroni/bin/patronictl /usr/local/bin && \
     ln -s /opt/patroni/bin/patroni_wale_restore /usr/local/bin
+
+COPY --from=builder /opt/postgres_exporter/bin/ /opt/postgres_exporter/bin/
+
+RUN ln -s /opt/postgres_exporter/bin/postgres_exporter /usr/local/bin
 
 COPY --from=stolon /opt/stolon/bin/ /opt/stolon/bin/
 

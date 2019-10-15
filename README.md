@@ -7,6 +7,7 @@ The image is based on the official "postgres" image, but includes a few other to
   * [Stolon](https://github.com/sorintlab/stolon)
   * [wall-e](https://github.com/wal-e/wal-e)
   * [wall-g](https://github.com/wal-g/wal-g)
+  * [postgres\_exporter](https://github.com/wrouesnel/postgres_exporter)
 
 And also database extensions:
 
