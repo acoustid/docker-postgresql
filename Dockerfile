@@ -41,12 +41,16 @@ RUN git clone https://github.com/acoustid/pg_acoustid.git /opt/pg_acoustid && \
 RUN mkdir -p /opt/wal-g/bin && \
     cd /opt/wal-g/bin && \
     wget https://github.com/wal-g/wal-g/releases/download/$WAL_G_VERSION/wal-g.linux-amd64.tar.gz && \
-    tar xvf wal-g.linux-amd64.tar.gz
+    tar xvf wal-g.linux-amd64.tar.gz && \
+    rm *.tar.gz
 
 RUN mkdir -p /opt/postgres_exporter/bin && \
     cd /opt/postgres_exporter/bin && \
     wget https://github.com/wrouesnel/postgres_exporter/releases/download/${POSTGRES_EXPORTER_VERSION}/postgres_exporter_${POSTGRES_EXPORTER_VERSION}_linux-amd64.tar.gz && \
-    tar xvf postgres_exporter_${POSTGRES_EXPORTER_VERSION}_linux-amd64.tar.gz
+    tar xvf postgres_exporter_${POSTGRES_EXPORTER_VERSION}_linux-amd64.tar.gz && \
+    mv postgres_exporter_${POSTGRES_EXPORTER_VERSION}_linux-amd64/postgres_exporter . && \
+    rmdir postgres_exporter_${POSTGRES_EXPORTER_VERSION}_linux-amd64 && \
+    rm *.tar.gz
 
 FROM postgres:$PG_VERSION
 
