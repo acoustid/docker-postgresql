@@ -27,7 +27,7 @@ RUN apt-get update && \
 
 RUN virtualenv /opt/patroni
 RUN /opt/patroni/bin/pip install requests psycopg2
-RUN /opt/patroni/bin/pip install patroni[etcd]
+RUN /opt/patroni/bin/pip install patroni[etcd,kubernetes]
 
 RUN virtualenv -p python3 /opt/wal-e
 RUN /opt/wal-e/bin/pip install wal-e[aws]
