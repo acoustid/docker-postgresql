@@ -23,7 +23,7 @@ RUN apt-get update && \
         libpq-dev \
         git \
         wget \
-        postgresql-server-dev-all
+        postgresql-server-dev-$PG_MAJOR
 
 RUN virtualenv /opt/patroni
 RUN /opt/patroni/bin/pip install requests psycopg2
