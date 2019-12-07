@@ -29,6 +29,9 @@ RUN virtualenv /opt/patroni
 RUN /opt/patroni/bin/pip install requests psycopg2
 RUN /opt/patroni/bin/pip install patroni[etcd,kubernetes]
 
+RUN virtualenv /opt/yacron
+RUN /opt/yacron/bin/pip install yacron
+
 RUN virtualenv -p python3 /opt/wal-e
 RUN /opt/wal-e/bin/pip install wal-e[aws]
 RUN sed -i 's/encrypt_key=True/encrypt_key=False/' /opt/wal-e/lib/python3.5/site-packages/wal_e/blobstore/s3/s3_util.py
@@ -89,6 +92,10 @@ COPY --from=builder /opt/patroni/ /opt/patroni/
 RUN ln -s /opt/patroni/bin/patroni /usr/local/bin && \
     ln -s /opt/patroni/bin/patronictl /usr/local/bin && \
     ln -s /opt/patroni/bin/patroni_wale_restore /usr/local/bin
+
+COPY --from=builder /opt/yacron/ /opt/yacron/
+
+RUN ln -s /opt/yacron/bin/yacron /usr/local/bin
 
 COPY --from=builder /opt/postgres_exporter/bin/ /opt/postgres_exporter/bin/
 
