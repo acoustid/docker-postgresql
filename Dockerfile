@@ -2,6 +2,7 @@ ARG PG_VERSION=latest
 
 FROM golang:latest as stolon
 
+ARG PATRONI_VERSION=
 ARG STOLON_VERSION=master
 
 RUN git clone https://github.com/sorintlab/stolon.git /opt/stolon && \
@@ -27,7 +28,7 @@ RUN apt-get update && \
 
 RUN virtualenv /opt/patroni
 RUN /opt/patroni/bin/pip install requests psycopg2
-RUN /opt/patroni/bin/pip install patroni[etcd,kubernetes]
+RUN /opt/patroni/bin/pip install "patroni[etcd,kubernetes]==$PATRONI_VERSION"
 
 RUN virtualenv -p python3 /opt/yacron
 RUN /opt/yacron/bin/pip install yacron
