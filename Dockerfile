@@ -2,8 +2,8 @@ ARG PG_VERSION=latest
 
 FROM golang:latest as stolon
 
-ARG PATRONI_VERSION=
-ARG STOLON_VERSION=master
+ARG PATRONI_VERSION
+ARG STOLON_VERSION
 
 RUN git clone https://github.com/sorintlab/stolon.git /opt/stolon && \
     cd /opt/stolon && \
@@ -12,8 +12,8 @@ RUN git clone https://github.com/sorintlab/stolon.git /opt/stolon && \
 
 FROM postgres:$PG_VERSION as builder
 
-ARG WAL_G_VERSION=
-ARG POSTGRES_EXPORTER_VERSION=
+ARG WAL_G_VERSION
+ARG POSTGRES_EXPORTER_VERSION
 
 RUN apt-get update && \
     apt-get install -y \
