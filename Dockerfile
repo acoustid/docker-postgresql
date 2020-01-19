@@ -2,7 +2,6 @@ ARG PG_VERSION=latest
 
 FROM golang:latest as stolon
 
-ARG PATRONI_VERSION
 ARG STOLON_VERSION
 
 RUN git clone https://github.com/sorintlab/stolon.git /opt/stolon && \
@@ -12,7 +11,9 @@ RUN git clone https://github.com/sorintlab/stolon.git /opt/stolon && \
 
 FROM postgres:$PG_VERSION as builder
 
+ARG PATRONI_VERSION
 ARG WAL_G_VERSION
+ARG WAL_E_VERSION
 ARG POSTGRES_EXPORTER_VERSION
 
 RUN apt-get update && \
@@ -34,7 +35,7 @@ RUN virtualenv -p python3 /opt/yacron
 RUN /opt/yacron/bin/pip install yacron
 
 RUN virtualenv -p python3 /opt/wal-e
-RUN /opt/wal-e/bin/pip install wal-e[aws]
+RUN /opt/wal-e/bin/pip install "wal-e[aws]==$WAL_E_VERSION"
 RUN sed -i 's/encrypt_key=True/encrypt_key=False/' /opt/wal-e/lib/python3.5/site-packages/wal_e/blobstore/s3/s3_util.py
 
 RUN git clone https://github.com/acoustid/pg_acoustid.git /opt/pg_acoustid && \
