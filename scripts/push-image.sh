@@ -6,6 +6,4 @@ echo "$QUAY_PASSWORD" | docker login quay.io --username "$QUAY_USERNAME" --passw
 
 set -x
 
-VERSION=$(echo "$GITHUB_REF" | cut -d/ -f3-)
-
-docker push quay.io/acoustid/postgresql:$VERSION
+docker push $IMAGE:$VERSION

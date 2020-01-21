@@ -1,0 +1,50 @@
+{{ if .Values.service.create }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "postgresql.clusterName" . }}
+  labels:
+    {{- include "postgresql.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.service.type }}
+  ports:
+    - port: {{ .Values.service.port }}
+      targetPort: postgresql
+      protocol: TCP
+      name: postgresql
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "postgresql.clusterName" . }}-replicas
+  labels:
+    {{- include "postgresql.labels" . | nindent 4 }}
+    role: replica
+spec:
+  type: {{ .Values.service.type }}
+  ports:
+    - port: {{ .Values.service.port }}
+      targetPort: postgresql
+      protocol: TCP
+      name: postgresql
+  selector:
+    {{- include "postgresql.clusterSelectorLabels" . | nindent 4 }}
+    role: replica
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "postgresql.clusterName" . }}-all
+  labels:
+    {{- include "postgresql.labels" . | nindent 4 }}
+    role: all
+spec:
+  type: {{ .Values.service.type }}
+  ports:
+    - port: {{ .Values.service.port }}
+      targetPort: postgresql
+      protocol: TCP
+      name: postgresql
+  selector:
+    {{- include "postgresql.clusterSelectorLabels" . | nindent 4 }}
+{{ end }}

@@ -1,0 +1,118 @@
+replicaCount: 1
+
+clusterName:
+
+image:
+  repository: quay.io/acoustid/postgresql
+  tag: master
+  pullPolicy: Always
+  # tag: v2019.10.15-pg11
+  # pullPolicy: IfNotPresent
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  # Specifies whether a service account should be created
+  create: true
+  # The name of the service account to use.
+  # If not set and create is true, a name is generated using the fullname template
+  name:
+
+rbac:
+  enabled: true
+
+persistence:
+  enabled: true
+  size: 1Gi
+  storageClassName:
+  accessMode: ReadWriteOnce
+
+bootstrap: {}
+
+dcs:
+  postgresql:
+    use_pg_rewind: true
+    parameters:
+      archive_mode: "on"
+      archive_timeout: "300s"
+      archive_command: "/postgresql/scripts/push-wal.sh %p"
+
+updateStrategy:
+  type: OnDelete
+
+users:
+  superuser:
+    # secretName:
+    username: postgres
+    password:
+  replication:
+    # secretName:
+    username: replication
+    password:
+
+podSecurityContext: {}
+  # fsGroup: 2000
+
+securityContext: {}
+  # capabilities:
+  #   drop:
+  #   - ALL
+  # readOnlyRootFilesystem: true
+  # runAsNonRoot: true
+  # runAsUser: 1000
+
+service:
+  create: true
+  type: ClusterIP
+  port: 5432
+
+resources: {}
+  # We usually recommend not to specify default resources and to leave this as a conscious
+  # choice for the user. This also increases chances charts run on environments with little
+  # resources, such as Minikube. If you do want to specify resources, uncomment the following
+  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+  # limits:
+  #   cpu: 100m
+  #   memory: 128Mi
+  # requests:
+  #   cpu: 100m
+  #   memory: 128Mi
+
+slony:
+  enabled: false
+  clusterName: ""
+  databaseName: ""
+
+backup:
+  enabled: false
+  bucket:
+  prefix:
+  # name: 
+  aws_access_key_id:
+  aws_secret_access_key:
+
+metrics:
+  enabled: false
+
+  postgresExporter:
+    image:
+      repository: quay.io/acoustid/postgresql
+      tag: master
+      pullPolicy: Always
+
+  patroniExporter:
+    image:
+      repository: quay.io/acoustid/patroni-exporter
+      tag: master
+      pullPolicy: Always
+
+  createPodMonitor: false
+  createPrometheusRule: false
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}

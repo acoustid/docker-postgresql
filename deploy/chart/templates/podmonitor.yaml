@@ -1,0 +1,28 @@
+{{ if and .Values.metrics.enabled .Values.metrics.createPodMonitor }}
+apiVersion: monitoring.coreos.com/v1
+kind: PodMonitor
+metadata:
+  name: {{ include "postgresql.fullname" . }}
+  labels:
+    {{- include "postgresql.labels" . | nindent 4 }}
+spec:
+  selector:
+    matchLabels:
+      {{- include "postgresql.selectorLabels" . | nindent 6 }}
+  namespaceSelector:
+    matchNames:
+      - {{ .Release.Namespace }}
+  podMetricsEndpoints:
+    - port: metrics
+      path: /metrics
+      relabelings:
+        - sourceLabels:
+            - __meta_kubernetes_pod_label_cluster_name
+          targetLabel: cluster
+    - port: patroni-metrics
+      path: /metrics
+      relabelings:
+        - sourceLabels:
+            - __meta_kubernetes_pod_label_cluster_name
+          targetLabel: cluster
+{{ end }}

@@ -2,8 +2,6 @@
 
 set -eux
 
-VERSION=$(echo "$GITHUB_REF" | cut -d/ -f3-)
-
 source versions.sh
 
 docker build \
@@ -13,5 +11,5 @@ docker build \
     --build-arg WAL_G_VERSION=$WAL_G_VERSION \
     --build-arg WAL_E_VERSION=$WAL_E_VERSION \
     --build-arg POSTGRES_EXPORTER_VERSION=$POSTGRES_EXPORTER_VERSION \
-    --tag quay.io/acoustid/postgresql:$VERSION \
+    --tag $IMAGE:$VERSION \
     .

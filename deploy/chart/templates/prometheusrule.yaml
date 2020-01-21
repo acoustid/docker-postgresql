@@ -1,0 +1,46 @@
+{{ if and .Values.metrics.enabled .Values.metrics.createPrometheusRule }}
+{{- $cluster := include "postgresql.fullname" . }}
+{{- $namespace := .Release.Namespace }}
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: {{ include "postgresql.fullname" . }}
+  labels:
+    {{- include "postgresql.labels" . | nindent 4 }}
+spec:
+  groups:
+    - name: {{ include "postgresql.fullname" . }}
+      rules:
+        - alert: PostgresNoLeader
+          expr:
+            absent(patroni_patroni_info{namespace="{{ $namespace }}", cluster="{{ $cluster }}", role=~"master|standby_leader", state="running"})
+          for: 5m
+          labels:
+            severity: critical
+          annotations:
+            description: PostgreSQL cluster "{{ $namespace }}/{{ $cluster }} " has no running leader.
+        - alert: PostgresPendingRestart
+          expr:
+            patroni_postgresql_pending_restart{namespace="{{ $namespace }}", cluster="{{ $cluster }}"} > 0
+          for: 15m
+          labels:
+            severity: warning
+          annotations:
+            description: PostgreSQL cluster "{{ $namespace }}/{{ $cluster }} " has members that are pending restart due to configuration changes.
+        - alert: PostgresXlogReplicaLag
+          expr:
+            time() - patroni_xlog_replayed_timestamp{namespace="{{ $namespace }}", cluster="{{ $cluster }}"} > 3600
+          for: 15m
+          labels:
+            severity: critical
+          annotations:
+            description: PostgreSQL cluster "{{ $namespace }}/{{ $cluster }} " has members with more than 1h replication lag.
+        - alert: PostgresTooManyConnecions
+          expr:
+            100 * sum by (namespace, pod) (pg_stat_activity_count{namespace="{{ $namespace }}", cluster="{{ $cluster }}"}) / sum by (namespace, pod) (pg_settings_max_connections{namespace="{{ $namespace }}", cluster="{{ $cluster }}"}) > 80
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            description: PostgreSQL server "{{`{{$labels.namespace}}`}}/{{`{{$labels.pod}}`}} " uses more than 80% of its connection slots.
+{{ end }}

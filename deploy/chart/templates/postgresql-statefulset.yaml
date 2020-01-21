@@ -1,0 +1,228 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ include "postgresql.fullname" . }}
+  labels:
+    {{- include "postgresql.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  updateStrategy:
+    {{- toYaml .Values.updateStrategy | nindent 4 }}
+  serviceName: {{ .Chart.Name }}
+  selector:
+    matchLabels:
+      {{- include "postgresql.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "postgresql.selectorLabels" . | nindent 8 }}
+    spec:
+    {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+      serviceAccountName: {{ include "postgresql.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ .Chart.Name | quote }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy | quote }}
+          command:
+            - "dumb-init"
+            - "--"
+            - "/postgresql/scripts/patroni.sh"
+          readinessProbe:
+            exec:
+              command:
+                - "pg_isready"
+                - "-h"
+                - "localhost"
+                - "-U"
+                - "postgres"
+            initialDelaySeconds: 5
+            timeoutSeconds: 1
+          env:
+            - name: PATRONI_SCOPE
+              value: {{ include "postgresql.clusterName" . | quote }}
+            - name: PATRONI_KUBERNETES_POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+            - name: PATRONI_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: PATRONI_KUBERNETES_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: PATRONI_KUBERNETES_USE_ENDPOINTS
+              value: "true"
+            - name: PATRONI_KUBERNETES_LABELS
+              value: {{ include "postgresql.clusterSelectorLabelsInJSON" . | quote }}
+            - name: PATRONI_KUBERNETES_SCOPE_LABEL
+              value: "cluster-name" 
+            - name: PATRONI_KUBERNETES_ROLE_LABEL
+              value: "role"
+            - name: PATRONI_KUBERNETES_PORTS
+              value: "[{'name': 'postgresql', 'port': 5432}]"
+            - name: PATRONI_SUPERUSER_USERNAME_FILE
+              value: "/etc/secrets/postgresql/superuser/username"
+            - name: PATRONI_SUPERUSER_PASSWORD_FILE
+              value: "/etc/secrets/postgresql/superuser/password"
+            - name: PATRONI_REPLICATION_USERNAME_FILE
+              value: "/etc/secrets/postgresql/replication/username"
+            - name: PATRONI_REPLICATION_PASSWORD_FILE
+              value: "/etc/secrets/postgresql/replication/password"
+            - name: PATRONI_POSTGRESQL_DATA_DIR
+              value: "/postgresql/data/pgroot/data"
+            - name: PATRONI_POSTGRESQL_LISTEN
+              value: "0.0.0.0:5432"
+            - name: PATRONI_RESTAPI_LISTEN
+              value: "0.0.0.0:8008"
+            - name: PATRONI_POSTGRESQL_PGPASS
+              value: "/tmp/pgpass"
+            - name: PATRONICTL_CONFIG_FILE
+              value: "/tmp/patroni.yml"
+            - name: PGUSERFILE
+              value: "/etc/secrets/postgresql/superuser/username"
+            - name: PGPASSWORDFILE
+              value: "/etc/secrets/postgresql/superuser/password"
+          ports:
+            - name: postgresql
+              containerPort: 5432
+              protocol: TCP
+            - name: patroni
+              containerPort: 8008
+              protocol: TCP
+          volumeMounts:
+            - name: dshm
+              mountPath: /dev/shm
+            - name: scripts
+              mountPath: /postgresql/scripts
+            - name: data
+              mountPath: /postgresql/data
+          {{- if .Values.backup.enabled }}
+            - name: wal-g-env
+              mountPath: /etc/wal-g.d/env
+          {{- end }}
+            - name: superuser
+              mountPath: /etc/secrets/postgresql/superuser
+            - name: replication
+              mountPath: /etc/secrets/postgresql/replication
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+
+{{ if .Values.metrics.enabled }}
+
+        - name: exporter
+          image: {{ .Values.metrics.postgresExporter.image.repository }}:{{ .Values.metrics.postgresExporter.image.tag }}
+          imagePullPolicy: {{ .Values.metrics.postgresExporter.image.pullPolicy }}
+          command:
+            - "/bin/bash"
+            - "-ec"
+            - |
+              export DATA_SOURCE_URI="$POD_IP:5432/postgres?sslmode=disable"
+              exec gosu postgres /opt/postgres_exporter/bin/postgres_exporter
+          env:
+            - name: PG_EXPORTER_WEB_LISTEN_ADDRESS
+              value: "0.0.0.0:9187"
+            - name: POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+            - name: DATA_SOURCE_USER_FILE
+              value: /etc/secrets/postgresql/superuser/username
+            - name: DATA_SOURCE_PASS_FILE
+              value: /etc/secrets/postgresql/superuser/password
+          ports:
+            - name: metrics
+              containerPort: 9187
+              protocol: TCP
+          volumeMounts:
+            - name: superuser
+              mountPath: /etc/secrets/postgresql/superuser
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 9187
+            initialDelaySeconds: 5
+
+        - name: patroni-exporter
+          image: {{ .Values.metrics.patroniExporter.image.repository }}:{{ .Values.metrics.patroniExporter.image.tag }}
+          imagePullPolicy: {{ .Values.metrics.patroniExporter.image.pullPolicy }}
+          command:
+            - "/usr/bin/dumb-init"
+            - "--"
+            - "/bin/sh"
+            - "-c"
+            - "exec /app/patroni_exporter.py -u http://$POD_IP:8008/patroni"
+          env:
+            - name: POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+          ports:
+            - name: patroni-metrics
+              containerPort: 9547
+              protocol: TCP
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 9547
+            initialDelaySeconds: 5
+
+{{ end }}
+
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+    {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+    {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+      volumes:
+        - name: dshm
+          emptyDir:
+            medium: Memory
+        - name: scripts
+          configMap:
+            name: {{ include "postgresql.fullname" . }}-scripts
+            defaultMode: 0777
+      {{- if not .Values.persistence.enabled }}
+        - name: data
+          emptyDir: {}
+      {{- end }}
+      {{- if .Values.backup.enabled }}
+        - name: wal-g-env
+          secret:
+            secretName: {{ include "postgresql.fullname" . }}-backup
+      {{- end }}
+        - name: superuser
+          secret:
+            secretName: {{ include "postgresql.superuserSecretName" . | quote }}
+        - name: replication
+          secret:
+            secretName: {{ include "postgresql.replicationSecretName" . | quote }}
+{{- if .Values.persistence.enabled }}
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+        labels:
+          {{- include "postgresql.selectorLabels" . | nindent 10 }}
+      spec:
+        accessModes:
+          - {{ .Values.persistence.accessMode | quote }}
+        storageClassName: {{ .Values.persistence.storageClassName | quote }}
+        resources:
+          requests:
+            storage: {{ .Values.persistence.size | quote }}
+{{- end }}
