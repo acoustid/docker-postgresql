@@ -127,6 +127,13 @@ spec:
           command:
             - sleep
             - infinity
+          env:
+            - name: PGHOST
+              value: 127.0.0.1
+            - name: PGUSERFILE
+              value: "/etc/secrets/postgresql/superuser/username"
+            - name: PGPASSWORDFILE
+              value: "/etc/secrets/postgresql/superuser/password"
           volumeMounts:
             - name: scripts
               mountPath: /postgresql/scripts
