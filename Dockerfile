@@ -63,6 +63,7 @@ RUN apt-get update && \
     apt-get install -y \
         python \
         postgresql-$PG_MAJOR-slony1-2 \
+        pgbackrest \
         slony1-2-bin \
         dumb-init \
         curl \
