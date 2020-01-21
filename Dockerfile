@@ -45,7 +45,7 @@ RUN git clone https://github.com/acoustid/pg_acoustid.git /opt/pg_acoustid && \
 
 RUN mkdir -p /opt/wal-g/bin && \
     cd /opt/wal-g/bin && \
-    wget https://github.com/wal-g/wal-g/releases/download/$WAL_G_VERSION/wal-g.linux-amd64.tar.gz && \
+    wget https://github.com/wal-g/wal-g/releases/download/v$WAL_G_VERSION/wal-g.linux-amd64.tar.gz && \
     tar xvf wal-g.linux-amd64.tar.gz && \
     rm *.tar.gz
 

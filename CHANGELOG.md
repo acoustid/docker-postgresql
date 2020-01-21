@@ -6,7 +6,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ### Added
-- Included [pgBackRest](https://pgbackrest.org/) and [Barman](https://www.pgbarman.org/) in the Docker image.
+- Include [pgBackRest](https://pgbackrest.org/) and [Barman](https://www.pgbarman.org/) in the Docker image.
+### Changed
+- Upgrade WAL-G from 0.2.9 to 0.2.14
 ### Fixed
 - Added PGHOST=127.0.0.1 environment variable to the postgresql pod.
 ### Included packages
@@ -14,7 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Patroni 1.6.3
 - Stolon 0.14.0
 - wal-e 1.1.0
-- wal-g 0.2.9
+- wal-g 0.2.14
 - postgres\_exporter 0.5.1
 
 ## [0.1.1] - 2019-01-21
