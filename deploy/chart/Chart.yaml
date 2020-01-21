@@ -2,7 +2,7 @@ apiVersion: v2
 name: postgresql
 description: HA PostgreSQL cluster managed by Patroni
 type: application
-version: 0.1.0
+version: 0.1.1
 appVersion: 11.5.0
 home: https://www.postgresql.org
 icon: https://bitnami.com/assets/stacks/postgresql/img/postgresql-stack-110x117.png

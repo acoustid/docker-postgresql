@@ -4,10 +4,8 @@ clusterName:
 
 image:
   repository: quay.io/acoustid/postgresql
-  tag: master
-  pullPolicy: Always
-  # tag: v2019.10.15-pg11
-  # pullPolicy: IfNotPresent
+  tag: v0.1.1
+  pullPolicy: IfNotPresent
 
 imagePullSecrets: []
 nameOverride: ""
