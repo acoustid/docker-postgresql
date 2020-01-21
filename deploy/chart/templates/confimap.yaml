@@ -10,26 +10,26 @@ data:
     {{ if .Values.backup.enabled }}
     export PGUSER=$(cat "$PGUSERFILE")
     export PGPASSWORD=$(cat "$PGPASSWORDFILE")
+    {{ if .Values.backup.backend.s3.bucket }}
+    export WALG_S3_PREFIX=s3://{{ .Values.backup.backend.s3.bucket }}{{ if .Values.backup.prefix }}/{{ .Values.backup.prefix }}{{ end }}/{{ default .Release.Name .Values.backup.name }}
+    {{ end }}
+    {{ range $key, $value := .Values.backup.env }}
+    export {{ $key }}={{ $value | quote }}
+    {{ end }}
     exec envdir /etc/wal-g.d/env wal-g "$@"
     {{ end }}
 
   fetch-wal.sh: |
     #!/usr/bin/env bash
-    {{ if .Values.backup.enabled }}
     exec $(dirname $0)/wal-g.sh wal-fetch "$1" "$2"
-    {{ end }}
 
   push-wal.sh: |
     #!/usr/bin/env bash
-    {{ if .Values.backup.enabled }}
     exec $(dirname $0)/wal-g.sh wal-push "$1"
-    {{ end }}
 
   push-backup.sh: |
     #!/usr/bin/env bash
-    {{ if .Values.backup.enabled }}
     exec $(dirname $0)/wal-g.sh backup-push "$PATRONI_POSTGRESQL_DATA_DIR"
-    {{ end }}
 
   restore-backup.py: |
     #!/usr/bin/env python

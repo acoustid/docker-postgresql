@@ -95,15 +95,3 @@ Create the name of the service account to use
 {{ include "postgresql.fullname" . }}-replication
 {{- end -}}
 {{- end -}}
-
-{{- define "postgresql.backupSecretName" -}}
-{{- if .Values.backup.secretName -}}
-{{ .Values.backup.secretName }}
-{{- else -}}
-{{ include "postgresql.fullname" . }}-backup
-{{- end -}}
-{{- end -}}
-
-{{- define "postgresql.backupPath" -}}
-s3://{{ .Values.backup.bucket }}/{{ .Values.backup.prefix }}/{{ default .Release.Name .Values.backup.name }}
-{{- end -}}

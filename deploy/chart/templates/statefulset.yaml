@@ -118,6 +118,30 @@ spec:
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
 
+{{ if .Values.backup.enabled }}
+        - name: backup
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy | quote }}
+          command:
+            - sleep
+            - infinity
+          volumeMounts:
+            - name: scripts
+              mountPath: /postgresql/scripts
+            - name: data
+              mountPath: /postgresql/data
+          {{- if and .Values.backup.enabled .Values.backup.extraConfigSecretName }}
+            - name: wal-g-env
+              mountPath: /etc/wal-g.d/env
+          {{- end }}
+            - name: superuser
+              mountPath: /etc/secrets/postgresql/superuser
+            - name: replication
+              mountPath: /etc/secrets/postgresql/replication
+{{ end }}
+
 {{ if .Values.metrics.enabled }}
 
         - name: exporter
@@ -203,10 +227,10 @@ spec:
         - name: data
           emptyDir: {}
       {{- end }}
-      {{- if .Values.backup.enabled }}
+      {{- if and .Values.backup.enabled .Values.backup.extraConfigSecretName }}
         - name: wal-g-env
           secret:
-            secretName: {{ include "postgresql.fullname" . }}-backup
+            secretName: {{ .Values.backup.extraConfigSecretName }}
       {{- end }}
         - name: superuser
           secret:

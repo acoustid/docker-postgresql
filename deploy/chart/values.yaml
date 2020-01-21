@@ -35,7 +35,7 @@ dcs:
     parameters:
       archive_mode: "on"
       archive_timeout: "300s"
-      archive_command: "/postgresql/scripts/push-wal.sh %p"
+      archive_command: "/postgresql/scripts/wal-g.sh wal-push %p"
 
 updateStrategy:
   type: OnDelete
@@ -85,11 +85,14 @@ slony:
 
 backup:
   enabled: false
-  bucket:
-  prefix:
-  # name: 
-  aws_access_key_id:
-  aws_secret_access_key:
+  # prefix:
+  # name:
+  backend:
+    s3:
+      enabled: false
+      bucket:
+  env: {}
+  # extraConfigSecretName:
 
 metrics:
   enabled: false
