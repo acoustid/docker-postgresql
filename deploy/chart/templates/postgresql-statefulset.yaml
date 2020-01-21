@@ -87,6 +87,8 @@ spec:
               value: "/tmp/pgpass"
             - name: PATRONICTL_CONFIG_FILE
               value: "/tmp/patroni.yml"
+            - name: PGHOST
+              value: 127.0.0.1
             - name: PGUSERFILE
               value: "/etc/secrets/postgresql/superuser/username"
             - name: PGPASSWORDFILE
