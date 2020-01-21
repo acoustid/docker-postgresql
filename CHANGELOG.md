@@ -6,7 +6,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ### Added
-- Included pgBackRest in the Docker image.
+- Included [pgBackRest](https://pgbackrest.org/) and [Barman](https://www.pgbarman.org/) in the Docker image.
 ### Fixed
 - Added PGHOST=127.0.0.1 environment variable to the postgresql pod.
 ### Included packages
