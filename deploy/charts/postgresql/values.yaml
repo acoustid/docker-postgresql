@@ -92,7 +92,23 @@ backup:
     s3:
       enabled: false
       bucket:
+
+  # https://github.com/wal-g/wal-g/blob/master/README.md#configuration
+  # https://github.com/wal-g/wal-g/blob/master/PostgreSQL.md#configuration
   env: {}
+  #   WALG_DELTA_MAX_STEPS: 5
+  #   WALG_DELTA_ORIGIN: LATEST
+  #   WALG_DISK_RATE_LIMIT:
+  #   WALG_NETWORK_RATE_LIMIT:
+  #   WALG_DOWNLOAD_CONCURRENCY:
+  #   WALG_UPLOAD_CONCURRENCY:
+  #   WALG_UPLOAD_DISK_CONCURRENCY:
+  envFrom: {}
+  # configMapRef:
+  #   name: backup-config
+  # secretRef:
+  #   name: backup-credentials
+
   # extraConfigSecretName:
 
 metrics:

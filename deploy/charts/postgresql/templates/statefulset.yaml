@@ -239,10 +239,15 @@ spec:
         - name: data
           emptyDir: {}
       {{- end }}
-      {{- if and .Values.backup.enabled .Values.backup.extraConfigSecretName }}
+      {{- if and .Values.backup.enabled (and .Values.backup.envFrom .Values.backup.envFrom.secretRef) }}
         - name: wal-g-env
           secret:
-            secretName: {{ .Values.backup.extraConfigSecretName }}
+            secretName: {{ .Values.backup.envFrom.secretRef.name }}
+      {{- end }}
+      {{- if and .Values.backup.enabled (and .Values.backup.envFrom .Values.backup.envFrom.configMapRef) }}
+        - name: wal-g-env
+          configMap:
+            name: {{ .Values.backup.envFrom.configMapRef.name }}
       {{- end }}
         - name: superuser
           secret:
