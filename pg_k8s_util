@@ -4,7 +4,6 @@ import os
 import argparse
 import time
 import re
-import sys
 import subprocess
 import json
 import logging
@@ -75,9 +74,9 @@ def cmd_backup_manager(args):
         command = prepare_wal_g_command(args, ["backup-list", "--json"])
         proc = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         if proc.returncode != 0:
-            sys.stdout.write(proc.stdout)
-            sys.stderr.write(proc.stderr)
-            raise SystemExit(proc.returncde)
+            logger.error('Failed to get list of backups')
+            time.sleep(10)
+            continue
 
         if not proc.stdout:
             backups = []
