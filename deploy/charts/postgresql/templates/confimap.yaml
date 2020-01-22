@@ -7,17 +7,23 @@ metadata:
 data:
   wal-g.sh: |
     #!/usr/bin/env bash
-    {{ if .Values.backup.enabled }}
-    export PGUSER=$(cat "$PGUSERFILE")
-    export PGPASSWORD=$(cat "$PGPASSWORDFILE")
-    {{ if .Values.backup.backend.s3.bucket }}
+    {{- if .Values.backup.enabled }}
+    if [ -n "$PGUSERFILE"]
+    then
+        export PGUSER=$(cat "$PGUSERFILE")
+    fi
+    if [ -n "$PGPASSWORDFILE"]
+    then
+        export PGPASSWORD=$(cat "$PGPASSWORDFILE")
+    fi
+    {{- if .Values.backup.backend.s3.bucket }}
     export WALG_S3_PREFIX=s3://{{ .Values.backup.backend.s3.bucket }}{{ if .Values.backup.prefix }}/{{ .Values.backup.prefix }}{{ end }}/{{ default .Release.Name .Values.backup.name }}
-    {{ end }}
-    {{ range $key, $value := .Values.backup.env }}
+    {{- end }}
+    {{- range $key, $value := .Values.backup.env }}
     export {{ $key }}={{ $value | quote }}
-    {{ end }}
+    {{- end }}
     exec envdir /etc/wal-g.d/env wal-g "$@"
-    {{ end }}
+    {{- end }}
 
   fetch-wal.sh: |
     #!/usr/bin/env bash
