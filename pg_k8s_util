@@ -24,7 +24,7 @@ def get_patroni_status(patroni_url):
 
 def prepare_wal_g_command(args, wal_g_args):
     command = [args.wal_g]
-    command.extend(args.wal_g_args)
+    command.extend(wal_g_args)
     return command
 
 
