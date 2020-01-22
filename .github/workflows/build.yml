@@ -1,9 +1,14 @@
-name: Build
-on: [push]
+name: Build image
+
+on:
+  push:
+    paths-ignore:
+      - deploy/**
+
 jobs:
 
-  docker:
-    name: Build Docker image
+  build:
+    name: Build
     runs-on: ubuntu-latest
     steps:
 
@@ -15,10 +20,10 @@ jobs:
         echo ::set-env name=IMAGE::quay.io/acoustid/postgresql
         echo ::set-env name=VERSION::$(echo $GITHUB_REF | cut -d'/' -f3)
 
-    - name: Build Docker image
+    - name: Build image
       run: ./scripts/build-image.sh
 
-    - name: Push Docker image
+    - name: Push image
       run: ./scripts/push-image.sh
       env:
         QUAY_USERNAME: ${{ secrets.QUAY_USERNAME }}
