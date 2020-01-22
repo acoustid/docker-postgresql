@@ -1,0 +1,165 @@
+#!/usr/bin/env python3
+
+import os
+import argparse
+import time
+import re
+import subprocess
+import json
+import logging
+import datetime
+from urllib.request import urlopen
+from urllib.error import URLError
+
+logger = logging.getLogger('pg_k8s_util')
+
+
+def get_patroni_status(patroni_url):
+    try:
+        res = urlopen(patroni_url)
+    except URLError:
+        return {'state': 'down'}
+    return json.loads(res.read().decode('utf8'))
+
+
+def prepare_wal_g_command(args, wal_g_args):
+    command = [args.wal_g]
+    command.extend(args.wal_g_args)
+    return command
+
+
+def cmd_wal_g(args):
+    command = prepare_wal_g_command(args, args.wal_g_args)
+    os.execv(command[0], command)
+
+
+def cmd_backup_list(args):
+    command = [
+        args.wal_g,
+        "backup-list",
+    ]
+    os.execv(command[0], command)
+
+
+def cmd_backup_push(args):
+    command = [
+        args.wal_g,
+        "backup-push",
+    ]
+    os.execv(command[0], command)
+
+
+def cmd_backup_delete(args):
+    command = [
+        args.wal_g,
+        "delete",
+    ]
+    os.execv(command[0], command)
+
+
+def cmd_backup_manager(args):
+    while True:
+        status = get_patroni_status(args.patroni_url)
+
+        if status['state'] != 'running':
+            logger.info('Database is not running')
+            time.sleep(10)
+            continue
+
+        if status['role'] != 'replica':
+            logger.info('Database does not have master role')
+            time.sleep(10)
+            continue
+
+        command = prepare_wal_g_command(args, ["backup-list", "--json"])
+        proc = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        if proc.returncode != 0:
+            sys.stdout.write(proc.stdout)
+            sys.stderr.write(proc.stderr)
+            raise SystemExit(proc.returncde)
+
+        if not proc.stdout:
+            backups = []
+        else:
+            backups = json.loads(proc.stdout.decode('utf8'))
+
+        most_recent_backup_time = None
+        for backup in backups:
+            backup_time = datetime.datetime.strptime(backup['time'], '%Y-%m-%dT%H:%M:%SZ').replace(tzinfo=datetime.timezone.utc)
+            if most_recent_backup_time is None or most_recent_backup_time < backup_time:
+                most_recent_backup_time = backup_time
+
+        now = datetime.datetime.now(datetime.timezone.utc)
+        if most_recent_backup_time is None or (now - most_recent_backup_time) > args.interval:
+            logger.info('Running backup process')
+            command = prepare_wal_g_command(args, ["backup-push", args.db_dir])
+            proc = subprocess.run(command)
+            if proc.returncode != 0:
+                logging.error('Backup failed')
+        else:
+            delay = args.interval - (now - most_recent_backup_time)
+            logger.info('Waiting for %s before running the next backup', delay)
+
+        time.sleep(60)
+
+
+def str_to_timedelta(s):
+    match = re.match('^(\d+)(h|d|w|m)$', s)
+    if match is not None:
+        count = int(match.group(1))
+        if match.group(2) == 'h':
+            return datetime.timedelta(hours=count)
+        if match.group(2) == 'd':
+            return datetime.timedelta(days=count)
+        if match.group(2) == 'w':
+            return datetime.timedelta(weeks=count)
+        if match.group(2) == 'm':
+            return datetime.timedelta(months=count)
+    raise ValueError('Invalid interval')
+
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.set_defaults(func=None)
+    parser.add_argument('-w', '--wal-g', metavar='PATH', dest='wal_g',
+                        default='/postgresql/scripts/wal-g.sh',
+                        help='Path to the WAL-G binary')
+    parser.add_argument('-p', '--patroni-url', metavar='URL', dest='patroni_url',
+                        default='http://127.0.0.1:8008/patroni',
+                        help='URL to the Patroni API')
+
+    subparsers = parser.add_subparsers()
+
+    wal_g_parser = subparsers.add_parser('wal-g', help='Run wal-g')
+    wal_g_parser.add_argument('wal_g_args', nargs=argparse.REMAINDER)
+    wal_g_parser.set_defaults(func=cmd_wal_g)
+
+    backup_parser = subparsers.add_parser('backup', help='Backup operations')
+    backup_subparsers = backup_parser.add_subparsers()
+
+    backup_list_parser = backup_subparsers.add_parser('list', help='List backups')
+    backup_list_parser.set_defaults(func=cmd_backup_list)
+
+    backup_push_parser = backup_subparsers.add_parser('push', help='Push new full backup')
+    backup_push_parser.set_defaults(func=cmd_backup_push)
+
+    backup_delete_parser = backup_subparsers.add_parser('delete', help='Delete old backups')
+    backup_delete_parser.set_defaults(func=cmd_backup_delete)
+
+    backup_manager_parser = backup_subparsers.add_parser('manager', help='Run backup manager')
+    backup_manager_parser.add_argument('-d', '--db-dir', metavar='PATH', help='Database directory', default='/postgresql/data/pgroot/data')
+    backup_manager_parser.add_argument('-i', '--interval', help='How often to do full backups', default='7d', type=str_to_timedelta)
+    backup_manager_parser.set_defaults(func=cmd_backup_manager)
+
+    args = parser.parse_args()
+    if args.func is None:
+        parser.print_help()
+        raise SystemExit(1)
+
+    logging.basicConfig(level=logging.INFO, datefmt='%Y/%m/%d %H:%M:%S', format='{levelname}: {asctime}.{msecs:03.0f} {message}', style='{')
+
+    args.func(args)
+
+
+if __name__ == '__main__':
+    main()

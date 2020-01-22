@@ -85,6 +85,7 @@ slony:
 
 backup:
   enabled: false
+  interval: 1d
   # prefix:
   # name:
   backend:

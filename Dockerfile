@@ -77,7 +77,7 @@ RUN apt-get update && \
 
 COPY setup_db.sh /docker-entrypoint-initdb.d/setup_db.sh
 
-COPY psql pg_dump postgres_exporter /usr/local/bin/
+COPY psql pg_dump postgres_exporter pg_k8s_util /usr/local/bin/
 
 COPY --from=builder /usr/lib/postgresql/$PG_MAJOR/lib/acoustid.so /usr/lib/postgresql/$PG_MAJOR/lib/
 COPY --from=builder /usr/share/postgresql/$PG_MAJOR/extension/acoustid* /usr/share/postgresql/$PG_MAJOR/extension/

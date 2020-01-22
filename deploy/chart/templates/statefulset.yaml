@@ -125,8 +125,13 @@ spec:
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           imagePullPolicy: {{ .Values.image.pullPolicy | quote }}
           command:
-            - sleep
-            - infinity
+            - "pg_k8s_util"
+            - "backup"
+            - "manager"
+            - "--db-dir"
+            - "/postgresql/data/pgroot/data"
+            - "--interval"
+            - {{ .Values.backup.interval | quote }}
           env:
             - name: PGHOST
               value: 127.0.0.1
