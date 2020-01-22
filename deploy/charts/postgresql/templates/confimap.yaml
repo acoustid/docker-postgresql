@@ -8,11 +8,11 @@ data:
   wal-g.sh: |
     #!/usr/bin/env bash
     {{- if .Values.backup.enabled }}
-    if [ -n "$PGUSERFILE"]
+    if [ -n "$PGUSERFILE" ]
     then
         export PGUSER=$(cat "$PGUSERFILE")
     fi
-    if [ -n "$PGPASSWORDFILE"]
+    if [ -n "$PGPASSWORDFILE" ]
     then
         export PGPASSWORD=$(cat "$PGPASSWORDFILE")
     fi
