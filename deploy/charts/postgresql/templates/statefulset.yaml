@@ -107,7 +107,7 @@ spec:
               mountPath: /postgresql/scripts
             - name: data
               mountPath: /postgresql/data
-          {{- if .Values.backup.enabled }}
+          {{- if and .Values.backup.enabled .Values.backup.envFrom }}
             - name: wal-g-env
               mountPath: /etc/wal-g.d/env
           {{- end }}
@@ -144,7 +144,7 @@ spec:
               mountPath: /postgresql/scripts
             - name: data
               mountPath: /postgresql/data
-          {{- if and .Values.backup.enabled .Values.backup.extraConfigSecretName }}
+          {{- if and .Values.backup.enabled .Values.backup.envFrom }}
             - name: wal-g-env
               mountPath: /etc/wal-g.d/env
           {{- end }}
