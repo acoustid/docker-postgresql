@@ -35,7 +35,7 @@ dcs:
     parameters:
       archive_mode: "on"
       archive_timeout: "300s"
-      archive_command: "/postgresql/scripts/wal-g.sh wal-push %p"
+      archive_command: "pg_k8s_util wal-g wal-push %p"
 
 updateStrategy:
   type: OnDelete
@@ -85,17 +85,11 @@ slony:
 
 backup:
   enabled: false
-  interval: 1d
-  # prefix:
-  # name:
-  backend:
-    s3:
-      enabled: false
-      bucket:
 
   # https://github.com/wal-g/wal-g/blob/master/README.md#configuration
   # https://github.com/wal-g/wal-g/blob/master/PostgreSQL.md#configuration
   env: {}
+  #   WALG_S3_PREFIX: s3://<BUCKET>/<DATABASE>
   #   WALG_DELTA_MAX_STEPS: 5
   #   WALG_DELTA_ORIGIN: LATEST
   #   WALG_DISK_RATE_LIMIT:
@@ -109,7 +103,14 @@ backup:
   # secretRef:
   #   name: backup-credentials
 
-  # extraConfigSecretName:
+  interval: 1d
+
+  retention: {}
+  #  delete:
+  #    before: 1m
+  #  keep:
+  #    count: 5
+  #    after: 1m
 
 metrics:
   enabled: false

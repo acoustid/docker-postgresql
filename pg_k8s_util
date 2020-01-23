@@ -5,6 +5,7 @@ import argparse
 import time
 import re
 import subprocess
+import yaml
 import json
 import logging
 import datetime
@@ -22,6 +23,11 @@ def get_patroni_status(patroni_url):
     return json.loads(res.read().decode('utf8'))
 
 
+def get_config(path):
+    with open(path, 'rt') as fp:
+        return yaml.load(fp)
+
+
 def prepare_wal_g_command(args, wal_g_args):
     command = [args.wal_g]
     command.extend(wal_g_args)
@@ -29,8 +35,27 @@ def prepare_wal_g_command(args, wal_g_args):
 
 
 def cmd_wal_g(args):
+    config = get_config(args.config)
+    if not config['backup']['enabled']:
+        logger.info('Backup is not enabled')
+        return
+
+    environ = {}
+    environ.update(os.environ)
+
+    if config['backup']['env']:
+        for name, value in config['backup']['env'].items():
+            environ[name] = str(value)
+
+    if config['backup']['envFrom']:
+        for path in config['backup']['envFrom']:
+            for name in os.listdir(path):
+                with open(os.path.join(path, name), 'rt', encoding='utf8') as fp:
+                    value = fp.read()
+                environ[name] = value
+
     command = prepare_wal_g_command(args, args.wal_g_args)
-    os.execv(command[0], command)
+    os.execve(command[0], command, environ)
 
 
 def cmd_backup_list(args):
@@ -121,8 +146,11 @@ def str_to_timedelta(s):
 def main():
     parser = argparse.ArgumentParser()
     parser.set_defaults(func=None)
+    parser.add_argument('-c', '--config', metavar='PATH', dest='config',
+                        default='/postgresql/config/cluster.yaml',
+                        help='Path to the WAL-G binary')
     parser.add_argument('-w', '--wal-g', metavar='PATH', dest='wal_g',
-                        default='/postgresql/scripts/wal-g.sh',
+                        default='/usr/local/bin/wal-g',
                         help='Path to the WAL-G binary')
     parser.add_argument('-p', '--patroni-url', metavar='URL', dest='patroni_url',
                         default='http://127.0.0.1:8008/patroni',

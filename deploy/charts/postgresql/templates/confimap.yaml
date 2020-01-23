@@ -16,9 +16,6 @@ data:
     then
         export PGPASSWORD=$(cat "$PGPASSWORDFILE")
     fi
-    {{- if .Values.backup.backend.s3.bucket }}
-    export WALG_S3_PREFIX=s3://{{ .Values.backup.backend.s3.bucket }}{{ if .Values.backup.prefix }}/{{ .Values.backup.prefix }}{{ end }}/{{ default .Release.Name .Values.backup.name }}
-    {{- end }}
     {{- range $key, $value := .Values.backup.env }}
     export {{ $key }}={{ $value | quote }}
     {{- end }}
