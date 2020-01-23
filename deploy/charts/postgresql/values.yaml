@@ -124,3 +124,20 @@ nodeSelector: {}
 tolerations: []
 
 affinity: {}
+
+pgbouncer:
+  enabled: false
+
+  replicaCount: 2
+
+  image:
+    repository: edoburu/pgbouncer
+    tag: 1.11.0
+    pullPolicy: IfNotPresent
+
+  updateStrategy:
+    type: RollingUpdate
+
+  env: {}
+  #  POOL_MODE: session
+  #  MAX_CLIENT_CONN: 100
