@@ -13,6 +13,10 @@ data:
       env:
         {{- toYaml . | nindent 8 }}
       {{- end }}
+      {{- with .Values.backup.envFrom }}
+      envFrom:
+        - /etc/wal-g.d/env
+      {{- end }}
       {{- with .Values.backup.interval }}
       interval: {{ toYaml . }}
       {{- end }}

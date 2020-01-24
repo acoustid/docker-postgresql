@@ -34,56 +34,59 @@ def prepare_wal_g_command(args, wal_g_args):
     return command
 
 
-def cmd_wal_g(args):
-    config = get_config(args.config)
-    if not config['backup']['enabled']:
-        logger.info('Backup is not enabled')
-        return
-
+def prepare_wal_g_environ(config):
     environ = {}
     environ.update(os.environ)
-
     if config['backup']['env']:
         for name, value in config['backup']['env'].items():
             environ[name] = str(value)
-
     if config['backup']['envFrom']:
         for path in config['backup']['envFrom']:
             for name in os.listdir(path):
                 with open(os.path.join(path, name), 'rt', encoding='utf8') as fp:
                     value = fp.read()
                 environ[name] = value
+    return environ
 
-    command = prepare_wal_g_command(args, args.wal_g_args)
+
+def exec_wal_g(args, wal_g_args):
+    config = get_config(args.config)
+    if not config['backup']['enabled']:
+        logger.info('Backup is not enabled')
+        return
+
+    command = prepare_wal_g_command(args, wal_g_args)
+    environ = prepare_wal_g_environ(config)
     os.execve(command[0], command, environ)
 
 
+def run_wal_g(config, args, wal_g_args, **kwargs):
+    command = prepare_wal_g_command(args, wal_g_args)
+    environ = prepare_wal_g_environ(config)
+    return subprocess.run(command, environ=environ, **kwargs)
+
+
+def cmd_wal_g(args):
+    exec_wal_g(args, args.wal_g_args)
+
+
 def cmd_backup_list(args):
-    command = [
-        args.wal_g,
-        "backup-list",
-    ]
-    os.execv(command[0], command)
+    exec_wal_g(args.wal_g_args, ["backup-list"])
 
 
 def cmd_backup_push(args):
-    command = [
-        args.wal_g,
-        "backup-push",
-    ]
-    os.execv(command[0], command)
-
-
-def cmd_backup_delete(args):
-    command = [
-        args.wal_g,
-        "delete",
-    ]
-    os.execv(command[0], command)
+    exec_wal_g(args.wal_g_args, ["backup-push"])
 
 
 def cmd_backup_manager(args):
     while True:
+        config = get_config(args.config)
+
+        if not config['backup']['enabled']:
+            logger.info('Backup is not enabled')
+            time.sleep(60)
+            return
+
         status = get_patroni_status(args.patroni_url)
 
         if status['state'] != 'running':
@@ -92,12 +95,11 @@ def cmd_backup_manager(args):
             continue
 
         if status['role'] != 'master':
-            logger.info('Database does not have master role')
+            logger.info('Database is not master')
             time.sleep(10)
             continue
 
-        command = prepare_wal_g_command(args, ["backup-list", "--json"])
-        proc = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        proc = run_wal_g(config, args, ["backup-list", "--json"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         if proc.returncode != 0:
             logger.error('Failed to get list of backups')
             time.sleep(10)
@@ -117,8 +119,7 @@ def cmd_backup_manager(args):
         now = datetime.datetime.now(datetime.timezone.utc)
         if most_recent_backup_time is None or (now - most_recent_backup_time) > args.interval:
             logger.info('Running backup process')
-            command = prepare_wal_g_command(args, ["backup-push", args.db_dir])
-            proc = subprocess.run(command)
+            proc = run_wal_g(config, args, ["backup-push", args.db_dir])
             if proc.returncode != 0:
                 logging.error('Backup failed')
         else:
@@ -170,9 +171,6 @@ def main():
 
     backup_push_parser = backup_subparsers.add_parser('push', help='Push new full backup')
     backup_push_parser.set_defaults(func=cmd_backup_push)
-
-    backup_delete_parser = backup_subparsers.add_parser('delete', help='Delete old backups')
-    backup_delete_parser.set_defaults(func=cmd_backup_delete)
 
     backup_manager_parser = backup_subparsers.add_parser('manager', help='Run backup manager')
     backup_manager_parser.add_argument('-d', '--db-dir', metavar='PATH', help='Database directory', default='/postgresql/data/pgroot/data')
