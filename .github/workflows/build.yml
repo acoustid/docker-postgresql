@@ -15,11 +15,16 @@ jobs:
     - name: Check out code
       uses: actions/checkout@v1
 
-    - uses: actions/setup-python@v1
+    - name: Install python
+      uses: actions/setup-python@v1
       with:
         python-version: '3.x'
 
-    - run: pip install flake8 mypy
+    - name: Install dependencies
+      run: pip install flake8 mypy
+
+    - name: Lint pg_k8s_util
+      run: ./scripts/lint_pg_k8s_util.sh
 
   build:
     name: Build

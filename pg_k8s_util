@@ -9,6 +9,7 @@ import yaml
 import json
 import logging
 import datetime
+from typing import Dict, Any, List
 from urllib.request import urlopen
 from urllib.error import URLError
 
@@ -16,6 +17,7 @@ logger = logging.getLogger('pg_k8s_util')
 
 
 def get_patroni_status(patroni_url):
+    # type: (str) -> Dict[str, Any]
     try:
         res = urlopen(patroni_url)
     except URLError:
@@ -24,17 +26,13 @@ def get_patroni_status(patroni_url):
 
 
 def get_config(path):
+    # type: (str) -> Dict[str, Any]
     with open(path, 'rt') as fp:
         return yaml.load(fp)
 
 
-def prepare_wal_g_command(args, wal_g_args):
-    command = [args.wal_g]
-    command.extend(wal_g_args)
-    return command
-
-
 def prepare_wal_g_environ(config):
+    # type: (Dict[str, Any]) -> Dict[str, str]
     environ = {}
 
     for name, value in os.environ.items():
@@ -42,11 +40,11 @@ def prepare_wal_g_environ(config):
             environ[name] = value
 
     for name in {'PGUSER', 'PGPASSWORD'}:
-        value = environ.get(name)
-        value_file = environ.get(name + 'FILE')
-        if value is None and value_file is not None:
-            with open(value_file, 'rt', encoding='utf8') as fp:
-                environ[name] = fp.read().strip()
+        if name not in environ:
+            value_file = environ.get(name + 'FILE')
+            if value_file is not None:
+                with open(value_file, 'rt', encoding='utf8') as fp:
+                    environ[name] = fp.read().strip()
 
     if config['backup']['env']:
         for name, value in config['backup']['env'].items():
@@ -64,36 +62,38 @@ def prepare_wal_g_environ(config):
     return environ
 
 
-def exec_wal_g(args, wal_g_args):
-    config = get_config(args.config)
-    if not config['backup']['enabled']:
-        logger.info('Backup is not enabled')
-        return
-
-    command = prepare_wal_g_command(args, wal_g_args)
+def exec_wal_g(config, wal_g, wal_g_args):
+    # type: (Dict[str, Any], str, List[str]) -> None
+    command = [wal_g] + wal_g_args
     environ = prepare_wal_g_environ(config)
     os.execve(command[0], command, environ)
 
 
-def run_wal_g(config, args, wal_g_args, **kwargs):
-    command = prepare_wal_g_command(args, wal_g_args)
+def run_wal_g(config, wal_g, wal_g_args, **kwargs):
+    # type: (Dict[str, Any], str, List[str], **Any) -> subprocess.CompletedProcess
+    command = [wal_g] + wal_g_args
     environ = prepare_wal_g_environ(config)
     return subprocess.run(command, env=environ, **kwargs)
 
 
 def cmd_wal_g(args):
-    exec_wal_g(args, args.wal_g_args)
+    # type: (argparse.Namespace) -> None
+    config = get_config(args.config)
 
+    backup_config = config.get('backup')
+    if backup_config is None:
+        logger.info('Backup config is missing')
+        return
 
-def cmd_backup_list(args):
-    exec_wal_g(args.wal_g_args, ["backup-list"])
+    if not config['backup']['enabled']:
+        logger.info('Backup is not enabled')
+        return
 
-
-def cmd_backup_push(args):
-    exec_wal_g(args.wal_g_args, ["backup-push"])
+    exec_wal_g(config, args.wal_g, args.wal_g_args)
 
 
 def backup_iteration(config, args):
+    # type: (Dict[str, Any], argparse.Namespace) -> None
     backup_config = config.get('backup')
     if backup_config is None:
         logger.info('Backup config is missing')
@@ -113,7 +113,7 @@ def backup_iteration(config, args):
         logger.info('Database is not master')
         return
 
-    proc = run_wal_g(config, args, ["backup-list", "--json"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    proc = run_wal_g(config, args.wal_g, ["backup-list", "--json"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     if proc.returncode != 0:
         logger.error('Failed to get list of backups')
         return
@@ -125,7 +125,11 @@ def backup_iteration(config, args):
 
     most_recent_backup_time = None
     for backup in backups:
-        backup_time = datetime.datetime.strptime(backup['time'], '%Y-%m-%dT%H:%M:%SZ').replace(tzinfo=datetime.timezone.utc)
+        backup_time = (
+            datetime.datetime
+            .strptime(backup['time'], '%Y-%m-%dT%H:%M:%SZ')
+            .replace(tzinfo=datetime.timezone.utc)
+        )
         if most_recent_backup_time is None or most_recent_backup_time < backup_time:
             most_recent_backup_time = backup_time
 
@@ -139,7 +143,7 @@ def backup_iteration(config, args):
     now = datetime.datetime.now(datetime.timezone.utc)
     if most_recent_backup_time is None or (now - most_recent_backup_time) > interval:
         logger.info('Running backup process')
-        proc = run_wal_g(config, args, ["backup-push", args.db_dir])
+        proc = run_wal_g(config, args.wal_g, ["backup-push", args.db_dir])
         if proc.returncode != 0:
             logging.error('Backup failed')
         else:
@@ -148,7 +152,7 @@ def backup_iteration(config, args):
                 count = retention_config.get('count')
                 if count is not None:
                     logger.info('Running backup cleanup process')
-                    proc = run_wal_g(config, args, ["delete", "retain", "FIND_FULL", str(count), "--confirm"])
+                    proc = run_wal_g(config, args.wal_g, ["delete", "retain", "FIND_FULL", str(count), "--confirm"])
                     if proc.returncode != 0:
                         logging.error('Backup cleanup failed')
     else:
@@ -157,6 +161,7 @@ def backup_iteration(config, args):
 
 
 def cmd_backup_manager(args):
+    # type: (argparse.Namespace) -> None
     while True:
         config = get_config(args.config)
         backup_iteration(config, args)
@@ -164,7 +169,8 @@ def cmd_backup_manager(args):
 
 
 def str_to_timedelta(s):
-    match = re.match('^(\d+)(m|h|d|w)$', s)
+    # type: (str) -> datetime.timedelta
+    match = re.match(r'^(\d+)(m|h|d|w)$', s)
     if match is not None:
         count = int(match.group(1))
         if match.group(2) == 'm':
@@ -200,14 +206,9 @@ def main():
     backup_parser = subparsers.add_parser('backup', help='Backup operations')
     backup_subparsers = backup_parser.add_subparsers()
 
-    backup_list_parser = backup_subparsers.add_parser('list', help='List backups')
-    backup_list_parser.set_defaults(func=cmd_backup_list)
-
-    backup_push_parser = backup_subparsers.add_parser('push', help='Push new full backup')
-    backup_push_parser.set_defaults(func=cmd_backup_push)
-
     backup_manager_parser = backup_subparsers.add_parser('manager', help='Run backup manager')
-    backup_manager_parser.add_argument('-d', '--db-dir', metavar='PATH', help='Database directory', default='/postgresql/data/pgroot/data')
+    backup_manager_parser.add_argument('-d', '--db-dir', metavar='PATH', help='Database directory',
+                                       default='/postgresql/data/pgroot/data')
     backup_manager_parser.set_defaults(func=cmd_backup_manager)
 
     args = parser.parse_args()
@@ -215,7 +216,12 @@ def main():
         parser.print_help()
         raise SystemExit(1)
 
-    logging.basicConfig(level=logging.INFO, datefmt='%Y/%m/%d %H:%M:%S', format='{levelname}: {asctime}.{msecs:03.0f} {message}', style='{')
+    logging.basicConfig(
+        level=logging.INFO,
+        datefmt='%Y/%m/%d %H:%M:%S',
+        format='{levelname}: {asctime}.{msecs:03.0f} {message}',
+        style='{',
+    )
 
     args.func(args)
 
