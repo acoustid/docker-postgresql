@@ -185,6 +185,7 @@ def str_to_timedelta(s):
 
 
 def main():
+    # type: () -> None
     parser = argparse.ArgumentParser()
     parser.set_defaults(func=None)
     parser.add_argument('-c', '--config', metavar='PATH', dest='config',
