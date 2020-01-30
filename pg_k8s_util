@@ -186,6 +186,11 @@ def str_to_timedelta(s):
 
 def main():
     # type: () -> None
+
+    default_db_dir = os.environ.get('PGDATA')
+    if default_db_dir is None:
+        default_db_dir = '/postgresql/data/pgroot/data'
+
     parser = argparse.ArgumentParser()
     parser.set_defaults(func=None)
     parser.add_argument('-c', '--config', metavar='PATH', dest='config',
@@ -209,7 +214,7 @@ def main():
 
     backup_manager_parser = backup_subparsers.add_parser('manager', help='Run backup manager')
     backup_manager_parser.add_argument('-d', '--db-dir', metavar='PATH', help='Database directory',
-                                       default='/postgresql/data/pgroot/data')
+                                       default=default_db_dir)
     backup_manager_parser.set_defaults(func=cmd_backup_manager)
 
     args = parser.parse_args()
