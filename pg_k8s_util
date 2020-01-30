@@ -160,6 +160,7 @@ def cmd_backup_manager(args):
     while True:
         config = get_config(args.config)
         backup_iteration(config, args)
+        time.sleep(60)
 
 
 def str_to_timedelta(s):
