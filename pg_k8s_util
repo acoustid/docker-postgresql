@@ -65,7 +65,7 @@ def exec_wal_g(args, wal_g_args):
 def run_wal_g(config, args, wal_g_args, **kwargs):
     command = prepare_wal_g_command(args, wal_g_args)
     environ = prepare_wal_g_environ(config)
-    return subprocess.run(command, environ=environ, **kwargs)
+    return subprocess.run(command, env=environ, **kwargs)
 
 
 def cmd_wal_g(args):
