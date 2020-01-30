@@ -93,73 +93,73 @@ def cmd_backup_push(args):
     exec_wal_g(args.wal_g_args, ["backup-push"])
 
 
+def backup_iteration(config, args):
+    backup_config = config.get('backup')
+    if backup_config is None:
+        logger.info('Backup config is missing')
+        return
+
+    if not config['backup']['enabled']:
+        logger.info('Backup is not enabled')
+        return
+
+    status = get_patroni_status(args.patroni_url)
+
+    if status['state'] != 'running':
+        logger.info('Database is not running')
+        return
+
+    if status['role'] != 'master':
+        logger.info('Database is not master')
+        return
+
+    proc = run_wal_g(config, args, ["backup-list", "--json"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    if proc.returncode != 0:
+        logger.error('Failed to get list of backups')
+        return
+
+    if not proc.stdout:
+        backups = []
+    else:
+        backups = json.loads(proc.stdout.decode('utf8'))
+
+    most_recent_backup_time = None
+    for backup in backups:
+        backup_time = datetime.datetime.strptime(backup['time'], '%Y-%m-%dT%H:%M:%SZ').replace(tzinfo=datetime.timezone.utc)
+        if most_recent_backup_time is None or most_recent_backup_time < backup_time:
+            most_recent_backup_time = backup_time
+
+    interval_str = backup_config.get('interval')
+    try:
+        interval = str_to_timedelta(interval_str or '1d')
+    except ValueError:
+        logger.error('Invalid backup interval "%s" found in the config file', interval_str)
+        return
+
+    now = datetime.datetime.now(datetime.timezone.utc)
+    if most_recent_backup_time is None or (now - most_recent_backup_time) > interval:
+        logger.info('Running backup process')
+        proc = run_wal_g(config, args, ["backup-push", args.db_dir])
+        if proc.returncode != 0:
+            logging.error('Backup failed')
+        else:
+            retention = backup_config.get('retention')
+            if retention is not None:
+                count = retention.get('count')
+                if count is not None:
+                    logger.info('Running backup cleanup process')
+                    proc = run_wal_g(config, args, ["delete", "retain", "FIND_FULL", count, "--confirm"])
+                    if proc.returncode != 0:
+                        logging.error('Backup cleanup failed')
+    else:
+        delay = interval - (now - most_recent_backup_time)
+        logger.info('Waiting for %s before running the next backup', delay)
+
+
 def cmd_backup_manager(args):
     while True:
         config = get_config(args.config)
-
-        if not config['backup']['enabled']:
-            logger.info('Backup is not enabled')
-            time.sleep(60)
-            return
-
-        status = get_patroni_status(args.patroni_url)
-
-        if status['state'] != 'running':
-            logger.info('Database is not running')
-            time.sleep(10)
-            continue
-
-        if status['role'] != 'master':
-            logger.info('Database is not master')
-            time.sleep(10)
-            continue
-
-        proc = run_wal_g(config, args, ["backup-list", "--json"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        if proc.returncode != 0:
-            logger.error('Failed to get list of backups')
-            time.sleep(10)
-            continue
-
-        if not proc.stdout:
-            backups = []
-        else:
-            backups = json.loads(proc.stdout.decode('utf8'))
-
-        most_recent_backup_time = None
-        for backup in backups:
-            backup_time = datetime.datetime.strptime(backup['time'], '%Y-%m-%dT%H:%M:%SZ').replace(tzinfo=datetime.timezone.utc)
-            if most_recent_backup_time is None or most_recent_backup_time < backup_time:
-                most_recent_backup_time = backup_time
-
-        interval_str = config.get('interval')
-        try:
-            interval = str_to_timedelta(interval_str or '1d')
-        except ValueError:
-            logger.error('Invalid backup interval "%s" found in the config file', interval_str)
-            time.sleep(60)
-            continue
-
-        now = datetime.datetime.now(datetime.timezone.utc)
-        interval = str_to_timedelta(config.get('interval', '1d'))
-        if most_recent_backup_time is None or (now - most_recent_backup_time) > interval:
-            logger.info('Running backup process')
-            proc = run_wal_g(config, args, ["backup-push", args.db_dir])
-            if proc.returncode != 0:
-                logging.error('Backup failed')
-            else:
-                retention = config.get('retention')
-                if retention is not None:
-                    count = retention.get('count')
-                    if count is not None:
-                        logger.info('Running backup cleanup process')
-                        proc = run_wal_g(config, args, ["delete", "retain", "FIND_FULL", count, "--confirm"])
-                        if proc.returncode != 0:
-                            logging.error('Backup cleanup failed')
-        else:
-            delay = interval - (now - most_recent_backup_time)
-            logger.info('Waiting for %s before running the next backup', delay)
-
-        time.sleep(60)
+        backup_iteration(config, args)
 
 
 def str_to_timedelta(s):
