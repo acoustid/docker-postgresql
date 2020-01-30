@@ -122,6 +122,14 @@ def cmd_backup_manager(args):
             proc = run_wal_g(config, args, ["backup-push", args.db_dir])
             if proc.returncode != 0:
                 logging.error('Backup failed')
+            else:
+                retention = config.get('retention')
+                if retention is not None:
+                    count = retention.get('count')
+                    if count is not None:
+                        proc = run_wal_g(config, args, ["delete", "retain", "FIND_FULL", count, "--confirm"])
+                        if proc.returncode != 0:
+                            logging.error('Backup cleanup failed')
         else:
             delay = args.interval - (now - most_recent_backup_time)
             logger.info('Waiting for %s before running the next backup', delay)

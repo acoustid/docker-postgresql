@@ -94,12 +94,8 @@ backup:
 
   interval: 1d
 
-  retention: {}
-  #  delete:
-  #    before: 1m
-  #  keep:
-  #    count: 5
-  #    after: 1m
+  retention:
+    count: 7
 
 metrics:
   enabled: false
