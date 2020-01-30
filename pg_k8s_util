@@ -163,17 +163,17 @@ def cmd_backup_manager(args):
 
 
 def str_to_timedelta(s):
-    match = re.match('^(\d+)(h|d|w|m)$', s)
+    match = re.match('^(\d+)(m|h|d|w)$', s)
     if match is not None:
         count = int(match.group(1))
+        if match.group(2) == 'm':
+            return datetime.timedelta(minutes=count)
         if match.group(2) == 'h':
             return datetime.timedelta(hours=count)
         if match.group(2) == 'd':
             return datetime.timedelta(days=count)
         if match.group(2) == 'w':
             return datetime.timedelta(weeks=count)
-        if match.group(2) == 'm':
-            return datetime.timedelta(months=count)
     raise ValueError('Invalid interval')
 
 
