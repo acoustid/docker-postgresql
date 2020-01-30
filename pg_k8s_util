@@ -143,12 +143,12 @@ def backup_iteration(config, args):
         if proc.returncode != 0:
             logging.error('Backup failed')
         else:
-            retention = backup_config.get('retention')
-            if retention is not None:
-                count = retention.get('count')
+            retention_config = backup_config.get('retention')
+            if retention_config is not None:
+                count = retention_config.get('count')
                 if count is not None:
                     logger.info('Running backup cleanup process')
-                    proc = run_wal_g(config, args, ["delete", "retain", "FIND_FULL", count, "--confirm"])
+                    proc = run_wal_g(config, args, ["delete", "retain", "FIND_FULL", str(count), "--confirm"])
                     if proc.returncode != 0:
                         logging.error('Backup cleanup failed')
     else:
