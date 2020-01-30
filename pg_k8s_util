@@ -131,8 +131,17 @@ def cmd_backup_manager(args):
             if most_recent_backup_time is None or most_recent_backup_time < backup_time:
                 most_recent_backup_time = backup_time
 
+        interval_str = config.get('interval')
+        try:
+            interval = str_to_timedelta(interval_str or '1d')
+        except ValueError:
+            logger.error('Invalid backup interval "%s" found in the config file', interval_str)
+            time.sleep(60)
+            continue
+
         now = datetime.datetime.now(datetime.timezone.utc)
-        if most_recent_backup_time is None or (now - most_recent_backup_time) > args.interval:
+        interval = str_to_timedelta(config.get('interval', '1d'))
+        if most_recent_backup_time is None or (now - most_recent_backup_time) > interval:
             logger.info('Running backup process')
             proc = run_wal_g(config, args, ["backup-push", args.db_dir])
             if proc.returncode != 0:
@@ -142,11 +151,12 @@ def cmd_backup_manager(args):
                 if retention is not None:
                     count = retention.get('count')
                     if count is not None:
+                        logger.info('Running backup cleanup process')
                         proc = run_wal_g(config, args, ["delete", "retain", "FIND_FULL", count, "--confirm"])
                         if proc.returncode != 0:
                             logging.error('Backup cleanup failed')
         else:
-            delay = args.interval - (now - most_recent_backup_time)
+            delay = interval - (now - most_recent_backup_time)
             logger.info('Waiting for %s before running the next backup', delay)
 
         time.sleep(60)
@@ -197,7 +207,6 @@ def main():
 
     backup_manager_parser = backup_subparsers.add_parser('manager', help='Run backup manager')
     backup_manager_parser.add_argument('-d', '--db-dir', metavar='PATH', help='Database directory', default='/postgresql/data/pgroot/data')
-    backup_manager_parser.add_argument('-i', '--interval', help='How often to do full backups', default='7d', type=str_to_timedelta)
     backup_manager_parser.set_defaults(func=cmd_backup_manager)
 
     args = parser.parse_args()
