@@ -9,9 +9,17 @@ jobs:
 
   test:
     name: Test pg_k8s_util
+    runs-on: ubuntu-latest
     steps:
+
     - name: Check out code
       uses: actions/checkout@v1
+
+    - uses: actions/setup-python@v1
+      with:
+        python-version: '3.x'
+
+      run: pip install flake8 mypy
 
   build:
     name: Build
