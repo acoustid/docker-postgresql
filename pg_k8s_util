@@ -36,18 +36,31 @@ def prepare_wal_g_command(args, wal_g_args):
 
 def prepare_wal_g_environ(config):
     environ = {}
-    environ.update(os.environ)
+
+    for name, value in os.environ.items():
+        if name.startswith('PG'):
+            environ[name] = value
+
+    for name in {'PGUSER', 'PGPASSWORD'}:
+        value = environ.get(name)
+        value_file = environ.get(name + 'FILE')
+        if value is None and value_file is not None:
+            with open(value_file, 'rt', encoding='utf8') as fp:
+                environ[name] = fp.read().strip()
+
     if config['backup']['env']:
         for name, value in config['backup']['env'].items():
             environ[name] = str(value)
+
     if config['backup']['envFrom']:
         for path in config['backup']['envFrom']:
             for name in os.listdir(path):
                 full_name = os.path.join(path, name)
                 if os.path.isfile(full_name):
                     with open(full_name, 'rt', encoding='utf8') as fp:
-                        value = fp.read()
+                        value = fp.read().strip()
                     environ[name] = value
+
     return environ
 
 
