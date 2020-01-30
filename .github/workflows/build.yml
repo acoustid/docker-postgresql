@@ -19,7 +19,7 @@ jobs:
       with:
         python-version: '3.x'
 
-      run: pip install flake8 mypy
+    - run: pip install flake8 mypy
 
   build:
     name: Build
