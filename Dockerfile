@@ -1,14 +1,5 @@
 ARG PG_VERSION=latest
 
-FROM golang:latest as stolon
-
-ARG STOLON_VERSION
-
-RUN git clone https://github.com/sorintlab/stolon.git /opt/stolon && \
-    cd /opt/stolon && \
-    git checkout $STOLON_VERSION && \
-    ./build
-
 FROM postgres:$PG_VERSION as builder
 
 ARG PATRONI_VERSION
@@ -104,10 +95,3 @@ COPY --from=builder /opt/yacron/ /opt/yacron/
 RUN ln -s /opt/yacron/bin/yacron /usr/local/bin
 
 COPY --from=builder /opt/postgres_exporter/bin/ /opt/postgres_exporter/bin/
-
-COPY --from=stolon /opt/stolon/bin/ /opt/stolon/bin/
-
-RUN ln -s /opt/stolon/bin/stolon-keeper /usr/local/bin && \
-    ln -s /opt/stolon/bin/stolon-sentinel /usr/local/bin && \
-    ln -s /opt/stolon/bin/stolon-proxy /usr/local/bin && \
-    ln -s /opt/stolon/bin/stolonctl /usr/local/bin
