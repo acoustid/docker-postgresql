@@ -1,0 +1,26 @@
+name: Package Helm Chart
+
+on:
+  push:
+    paths:
+      - deploy/charts/**
+
+jobs:
+
+  package:
+    name: Package
+    runs-on: ubuntu-latest
+    steps:
+
+    - name: Check out code
+      uses: actions/checkout@v1
+
+    - name: Lint
+      uses: helm/chart-testing-action@master
+      with:
+        command: lint
+
+    - name: Release
+      uses: helm/chart-releaser-action@master
+      with:
+        charts_dir: deploy/charts/
