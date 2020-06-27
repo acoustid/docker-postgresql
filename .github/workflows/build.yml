@@ -38,7 +38,7 @@ jobs:
       run: |
         source versions.sh
         echo ::set-env name=IMAGE::quay.io/acoustid/postgresql
-        echo ::set-env name=VERSION::$(PG_VERSION)-$(echo $GITHUB_REF | cut -d'/' -f3)
+        echo ::set-env name=VERSION::${PG_VERSION}-$(echo $GITHUB_REF | cut -d'/' -f3)
 
     - name: Build image
       run: ./scripts/build-image.sh
