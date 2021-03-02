@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
 
-if test -n "$PGUSERFILE" && test -z "$PGUSER"
+if test -n "$PATRONI_SUPERUSER_USERNAME" && test -z "$PGUSER"
 then
-    export PGUSER=$(cat "$PGUSERFILE")
+    export PGUSER=$PATRONI_SUPERUSER_USERNAME
 fi
 
-if test -n "$PGPASSWORDFILE" && test -z "$PGPASSWORD"
+if test -n "$PATRONI_SUPERUSER_PASSWORD" && test -z "$PGPASSWORD"
 then
-    export PGPASSWORD=$(cat "$PGPASSWORDFILE")
+    export PGPASSWORD=$PATRONI_SUPERUSER_PASSWORD
 fi
 
 exec /usr/bin/psql "$@"
