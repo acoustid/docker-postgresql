@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+
+if test -n "$PATRONI_SUPERUSER_USERNAME" && test -z "$PGUSER"
+then
+    export PGUSER=$PATRONI_SUPERUSER_USERNAME
+fi
+
+if test -n "$PATRONI_SUPERUSER_PASSWORD" && test -z "$PGPASSWORD"
+then
+    export PGPASSWORD=$PATRONI_SUPERUSER_PASSWORD
+fi
+
+exec /opt/wal-g/bin/wal-g "$@"
