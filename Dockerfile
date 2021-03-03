@@ -15,6 +15,7 @@ RUN apt-get update && \
         libpq-dev \
         git \
         wget \
+        sshpass \
         postgresql-server-dev-$PG_MAJOR
 
 RUN virtualenv /opt/patroni
