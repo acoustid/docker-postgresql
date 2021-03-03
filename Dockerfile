@@ -19,8 +19,8 @@ RUN apt-get update && \
         postgresql-server-dev-$PG_MAJOR
 
 RUN virtualenv /opt/patroni
-RUN /opt/patroni/bin/pip install requests psycopg2
-RUN /opt/patroni/bin/pip install "patroni[etcd,kubernetes]==$PATRONI_VERSION"
+RUN /opt/patroni/bin/pip install requests psycopg2 six
+RUN /opt/patroni/bin/pip install "patroni[kubernetes]==$PATRONI_VERSION"
 
 RUN virtualenv -p python3 /opt/yacron
 RUN /opt/yacron/bin/pip install yacron
