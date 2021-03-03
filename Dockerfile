@@ -4,7 +4,6 @@ FROM postgres:$PG_VERSION as builder
 
 ARG PATRONI_VERSION
 ARG WAL_G_VERSION
-ARG WAL_E_VERSION
 ARG POSTGRES_EXPORTER_VERSION
 
 RUN apt-get update && \
@@ -24,9 +23,6 @@ RUN /opt/patroni/bin/pip install "patroni[kubernetes]==$PATRONI_VERSION"
 
 RUN virtualenv -p python3 /opt/yacron
 RUN /opt/yacron/bin/pip install yacron
-
-RUN virtualenv -p python3 /opt/wal-e
-RUN /opt/wal-e/bin/pip install "wal-e[aws]==$WAL_E_VERSION"
 
 RUN git clone https://github.com/acoustid/pg_acoustid.git /opt/pg_acoustid && \
     cd /opt/pg_acoustid && \
@@ -74,10 +70,6 @@ COPY psql pg_dump postgres_exporter pg_k8s_util /usr/local/bin/
 COPY --from=builder /usr/lib/postgresql/$PG_MAJOR/lib/acoustid.so /usr/lib/postgresql/$PG_MAJOR/lib/
 COPY --from=builder /usr/share/postgresql/$PG_MAJOR/extension/acoustid* /usr/share/postgresql/$PG_MAJOR/extension/
 COPY --from=builder /usr/lib/postgresql/$PG_MAJOR/lib/bitcode/acoustid /usr/lib/postgresql/$PG_MAJOR/lib/bitcode/
-
-COPY --from=builder /opt/wal-e/ /opt/wal-e/
-
-RUN ln -s /opt/wal-e/bin/wal-e /usr/local/bin
 
 COPY --from=builder /opt/wal-g/ /opt/wal-g/
 
