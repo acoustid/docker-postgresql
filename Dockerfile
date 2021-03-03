@@ -15,7 +15,6 @@ RUN apt-get update && \
         libpq-dev \
         git \
         wget \
-        sshpass \
         postgresql-server-dev-$PG_MAJOR
 
 RUN virtualenv /opt/patroni
@@ -62,6 +61,7 @@ RUN apt-get update && \
         less \
         vim \
         lzop \
+        sshpass \
         pv
 
 COPY setup_db.sh /docker-entrypoint-initdb.d/setup_db.sh
