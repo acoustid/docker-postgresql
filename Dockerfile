@@ -10,18 +10,16 @@ RUN apt-get update && \
     apt-get install -y \
         python \
         python3 \
-        python-pip \
-        python-virtualenv \
         libpq-dev \
         git \
         wget \
         postgresql-server-dev-$PG_MAJOR
 
-RUN virtualenv /opt/patroni
+RUN python3 -m venv /opt/patroni
 RUN /opt/patroni/bin/pip install requests psycopg2 six
 RUN /opt/patroni/bin/pip install "patroni[kubernetes]==$PATRONI_VERSION"
 
-RUN virtualenv -p python3 /opt/yacron
+RUN python3 -m venv /opt/yacron
 RUN /opt/yacron/bin/pip install yacron
 
 RUN git clone https://github.com/acoustid/pg_acoustid.git /opt/pg_acoustid && \
@@ -47,7 +45,6 @@ FROM postgres:$PG_VERSION
 
 RUN apt-get update && \
     apt-get install -y \
-        python \
         python3 \
         python3-yaml \
         postgresql-$PG_MAJOR-slony1-2 \
