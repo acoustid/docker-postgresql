@@ -35,8 +35,8 @@ RUN git clone -b v${PG_ACOUSTID_VERSION} https://github.com/acoustid/pg_acoustid
 
 RUN mkdir -p /opt/wal-g/bin && \
     cd /opt/wal-g/bin && \
-    wget https://github.com/wal-g/wal-g/releases/download/v$WAL_G_VERSION/wal-g.linux-amd64.tar.gz && \
-    tar xvf wal-g.linux-amd64.tar.gz && \
+    wget https://github.com/wal-g/wal-g/releases/download/v$WAL_G_VERSION/wal-g-pg-ubuntu-20.04-amd64.tar.gz && \
+    tar xvf wal-g-pg-ubuntu-20.04-amd64.tar.gz && \
     rm *.tar.gz
 
 RUN mkdir -p /opt/postgres_exporter/bin && \
