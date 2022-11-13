@@ -54,6 +54,7 @@ RUN apt-get update && \
         python3-requests \
         python3-psycopg2 \
         postgresql-$PG_MAJOR-slony1-2 \
+        pgbackrest \
         barman \
         pgbackrest \
         slony1-2-bin \
