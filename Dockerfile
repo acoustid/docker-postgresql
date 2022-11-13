@@ -10,6 +10,7 @@ RUN apt-get update && \
     apt-get install -y \
         python \
         python3 \
+        python3-venv \
         libpq-dev \
         git \
         wget \
@@ -46,6 +47,7 @@ FROM postgres:$PG_VERSION
 RUN apt-get update && \
     apt-get install -y \
         python3 \
+        python3-venv \
         python3-yaml \
         postgresql-$PG_MAJOR-slony1-2 \
         barman \
