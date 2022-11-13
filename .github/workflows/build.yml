@@ -68,8 +68,8 @@ jobs:
         push: ${{ github.event_name != 'pull_request' }}
         tags: ${{ steps.meta.outputs.tags }}
         labels: ${{ steps.meta.outputs.labels }}
-        build-args:
-          - PG_VERSION=${{ env.PG_VERSION }}
-          - PATRONI_VERSION=${{ env.PATRONI_VERSION }}
-          - WAL_G_VERSION=${{ env.WAL_G_VERSION }}
-          - POSTGRES_EXPORTER_VERSION=${{ env.POSTGRES_EXPORTER_VERSION }}
+        build-args: |
+          PG_VERSION=${{ env.PG_VERSION }}
+          PATRONI_VERSION=${{ env.PATRONI_VERSION }}
+          WAL_G_VERSION=${{ env.WAL_G_VERSION }}
+          POSTGRES_EXPORTER_VERSION=${{ env.POSTGRES_EXPORTER_VERSION }}
