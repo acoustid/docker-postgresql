@@ -5,6 +5,7 @@ FROM postgres:$PG_VERSION as builder
 ARG PATRONI_VERSION
 ARG WAL_G_VERSION
 ARG POSTGRES_EXPORTER_VERSION
+ARG PG_ACOUSTID_VERSION
 
 RUN apt-get update && \
     apt-get install -y \
@@ -18,6 +19,7 @@ RUN apt-get update && \
         git \
         wget \
         make \
+        gcc \
         postgresql-server-dev-$PG_MAJOR
 
 RUN python3 -m venv --system-site-packages /opt/patroni
@@ -26,7 +28,7 @@ RUN /opt/patroni/bin/pip install "patroni[kubernetes]==$PATRONI_VERSION"
 RUN python3 -m venv --system-site-packages /opt/yacron
 RUN /opt/yacron/bin/pip install yacron
 
-RUN git clone https://github.com/acoustid/pg_acoustid.git /opt/pg_acoustid && \
+RUN git clone -b v${PG_ACOUSTID_VERSION} https://github.com/acoustid/pg_acoustid.git /opt/pg_acoustid && \
     cd /opt/pg_acoustid && \
     make && \
     make install
