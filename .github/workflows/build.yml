@@ -38,6 +38,9 @@ jobs:
     - name: Check out code
       uses: actions/checkout@v3
 
+    - name: Import environment variables from versions.sh
+      run: cat versions.sh >> $GITHUB_ENV
+
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v2
 
@@ -65,3 +68,8 @@ jobs:
         push: ${{ github.event_name != 'pull_request' }}
         tags: ${{ steps.meta.outputs.tags }}
         labels: ${{ steps.meta.outputs.labels }}
+        build-args:
+          - PG_VERSION=${{ env.PG_VERSION }}
+          - PATRONI_VERSION=${{ env.PATRONI_VERSION }}
+          - WAL_G_VERSION=${{ env.WAL_G_VERSION }}
+          - POSTGRES_EXPORTER_VERSION=${{ env.POSTGRES_EXPORTER_VERSION }}
