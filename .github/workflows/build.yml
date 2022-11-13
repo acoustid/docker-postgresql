@@ -59,7 +59,7 @@ jobs:
         images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
         flavor: |
           latest=auto
-          prefix=pg${{ env.PG_VERSION }},onlatest=true
+          prefix=pg${{ env.PG_VERSION }}-,onlatest=true
 
     - name: Build and push Docker image
       uses: docker/build-push-action@v3
