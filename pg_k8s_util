@@ -28,7 +28,7 @@ def get_patroni_status(patroni_url):
 def get_config(path):
     # type: (str) -> Dict[str, Any]
     with open(path, 'rt') as fp:
-        return yaml.load(fp)
+        return yaml.load(fp, Loader=yaml.SafeLoader)
 
 
 def prepare_wal_g_environ(config):
