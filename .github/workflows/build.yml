@@ -62,6 +62,7 @@ jobs:
           prefix=pg${{ env.PG_VERSION }}-,onlatest=true
         tags: |
           type=semver,pattern={{version}}
+          type=ref,event=branch
           type=sha,prefix={{branch}}-
 
     - name: Build and push Docker image
