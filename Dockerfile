@@ -44,7 +44,7 @@ RUN mkdir -p /opt/postgres_exporter/bin && \
     wget https://github.com/prometheus-community/postgres_exporter/releases/download/v${POSTGRES_EXPORTER_VERSION}/postgres_exporter-${POSTGRES_EXPORTER_VERSION}.linux-amd64.tar.gz && \
     tar xvf postgres_exporter-${POSTGRES_EXPORTER_VERSION}.linux-amd64.tar.gz && \
     mv postgres_exporter-${POSTGRES_EXPORTER_VERSION}.linux-amd64/postgres_exporter . && \
-    rmdir postgres_exporter-${POSTGRES_EXPORTER_VERSION}.linux-amd64 && \
+    rm -rf postgres_exporter-${POSTGRES_EXPORTER_VERSION}.linux-amd64 && \
     rm *.tar.gz
 
 FROM postgres:$PG_VERSION
