@@ -62,7 +62,7 @@ jobs:
           prefix=pg${{ env.PG_VERSION }}-,onlatest=true
         tags: |
           type=semver,pattern={{version}}
-          type=edge
+          type=sha,prefix={{branch}}-
 
     - name: Build and push Docker image
       uses: docker/build-push-action@v3
