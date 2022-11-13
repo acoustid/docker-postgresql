@@ -19,7 +19,6 @@ RUN apt-get update && \
         git \
         wget \
         make \
-        gcc \
         postgresql-server-dev-$PG_MAJOR
 
 RUN python3 -m venv --system-site-packages /opt/patroni
@@ -30,7 +29,7 @@ RUN /opt/yacron/bin/pip install yacron
 
 RUN git clone -b v${PG_ACOUSTID_VERSION} https://github.com/acoustid/pg_acoustid.git /opt/pg_acoustid && \
     cd /opt/pg_acoustid && \
-    make && \
+    CC=clang make && \
     make install
 
 RUN mkdir -p /opt/wal-g/bin && \
