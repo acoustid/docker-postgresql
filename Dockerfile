@@ -37,7 +37,7 @@ RUN mkdir -p /opt/wal-g/bin && \
 
 RUN mkdir -p /opt/postgres_exporter/bin && \
     cd /opt/postgres_exporter/bin && \
-    wget https://github.com/wrouesnel/postgres_exporter/releases/download/${POSTGRES_EXPORTER_VERSION}/postgres_exporter_${POSTGRES_EXPORTER_VERSION}_linux-amd64.tar.gz && \
+    wget https://github.com/prometheus-community/postgres_exporter/releases/download/${POSTGRES_EXPORTER_VERSION}/postgres_exporter_${POSTGRES_EXPORTER_VERSION}_linux-amd64.tar.gz && \
     tar xvf postgres_exporter_${POSTGRES_EXPORTER_VERSION}_linux-amd64.tar.gz && \
     mv postgres_exporter_${POSTGRES_EXPORTER_VERSION}_linux-amd64/postgres_exporter . && \
     rmdir postgres_exporter_${POSTGRES_EXPORTER_VERSION}_linux-amd64 && \
