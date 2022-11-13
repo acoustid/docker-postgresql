@@ -60,6 +60,9 @@ jobs:
         flavor: |
           latest=auto
           prefix=pg${{ env.PG_VERSION }}-,onlatest=true
+        tags: |
+          type=semver,pattern={{version}}
+          type=edge
 
     - name: Build and push Docker image
       uses: docker/build-push-action@v3
