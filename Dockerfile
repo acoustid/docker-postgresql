@@ -11,13 +11,15 @@ RUN apt-get update && \
         python \
         python3 \
         python3-venv \
+        python3-yaml \
+        python3-requests \
+        python3-psycopg2 \
         libpq-dev \
         git \
         wget \
         postgresql-server-dev-$PG_MAJOR
 
 RUN python3 -m venv /opt/patroni
-RUN /opt/patroni/bin/pip install requests psycopg2 six
 RUN /opt/patroni/bin/pip install "patroni[kubernetes]==$PATRONI_VERSION"
 
 RUN python3 -m venv /opt/yacron
@@ -49,6 +51,8 @@ RUN apt-get update && \
         python3 \
         python3-venv \
         python3-yaml \
+        python3-requests \
+        python3-psycopg2 \
         postgresql-$PG_MAJOR-slony1-2 \
         barman \
         pgbackrest \
