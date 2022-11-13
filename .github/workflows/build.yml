@@ -21,7 +21,7 @@ jobs:
         python-version: '3.x'
 
     - name: Install dependencies
-      run: pip install flake8 mypy
+      run: pip install flake8 mypy types-PyYAML
 
     - name: Lint pg_k8s_util
       run: ./scripts/lint_pg_k8s_util.sh
