@@ -17,6 +17,7 @@ RUN apt-get update && \
         libpq-dev \
         git \
         wget \
+        make \
         postgresql-server-dev-$PG_MAJOR
 
 RUN python3 -m venv --system-site-packages /opt/patroni
