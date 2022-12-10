@@ -11,25 +11,6 @@ env:
 
 jobs:
 
-  test:
-    name: Test pg_k8s_util
-    runs-on: ubuntu-latest
-    steps:
-
-    - name: Check out code
-      uses: actions/checkout@v3
-
-    - name: Install python
-      uses: actions/setup-python@v4
-      with:
-        python-version: '3.x'
-
-    - name: Install dependencies
-      run: pip install flake8 mypy types-PyYAML
-
-    - name: Lint pg_k8s_util
-      run: ./scripts/lint_pg_k8s_util.sh
-
   build:
     name: Build
     runs-on: ubuntu-latest
