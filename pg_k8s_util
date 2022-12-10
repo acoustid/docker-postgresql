@@ -16,8 +16,7 @@ from urllib.error import URLError
 logger = logging.getLogger('pg_k8s_util')
 
 
-def get_patroni_status(patroni_url):
-    # type: (str) -> Dict[str, Any]
+def get_patroni_status(patroni_url: str) -> Dict[str, Any]:
     try:
         res = urlopen(patroni_url)
     except URLError:
@@ -25,14 +24,12 @@ def get_patroni_status(patroni_url):
     return json.loads(res.read().decode('utf8'))
 
 
-def get_config(path):
-    # type: (str) -> Dict[str, Any]
+def get_config(path: str) -> Dict[str, Any]:
     with open(path, 'rt') as fp:
         return yaml.load(fp, Loader=yaml.SafeLoader)
 
 
-def prepare_wal_g_environ(config):
-    # type: (Dict[str, Any]) -> Dict[str, str]
+def prepare_wal_g_environ(config: Dict[str, Any]) -> Dict[str, str]:
     environ = {}
 
     for name, value in os.environ.items():
@@ -62,22 +59,19 @@ def prepare_wal_g_environ(config):
     return environ
 
 
-def exec_wal_g(config, wal_g, wal_g_args):
-    # type: (Dict[str, Any], str, List[str]) -> None
+def exec_wal_g(config: Dict[str, Any], wal_g: str, wal_g_args: List[str]) -> None:
     command = [wal_g] + wal_g_args
     environ = prepare_wal_g_environ(config)
     os.execve(command[0], command, environ)
 
 
-def run_wal_g(config, wal_g, wal_g_args, **kwargs):
-    # type: (Dict[str, Any], str, List[str], **Any) -> subprocess.CompletedProcess
+def run_wal_g(config: Dict[str, Any], wal_g: str, wal_g_args: List[str], **kwargs) -> subprocess.CompletedProcess:
     command = [wal_g] + wal_g_args
     environ = prepare_wal_g_environ(config)
     return subprocess.run(command, env=environ, **kwargs)
 
 
-def cmd_wal_g(args):
-    # type: (argparse.Namespace) -> None
+def cmd_wal_g(args: argparse.Namespace) -> None:
     config = get_config(args.config)
 
     backup_config = config.get('backup')
