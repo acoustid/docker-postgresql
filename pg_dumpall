@@ -2,4 +2,4 @@
 
 source /postgresql-scripts/pg_config.inc.sh
 
-exec /opt/wal-g/bin/wal-g "$@"
+exec /usr/bin/pg_dumpall "$@"
