@@ -70,7 +70,8 @@ RUN apt-get update && \
         vim \
         lzop \
         sshpass \
-        pv
+        pv \
+        gettext-base
 
 COPY setup_db.sh /docker-entrypoint-initdb.d/setup_db.sh
 
