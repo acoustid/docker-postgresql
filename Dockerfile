@@ -85,7 +85,5 @@ COPY --from=builder /opt/yacron/ /opt/yacron/
 
 RUN ln -s /opt/yacron/bin/yacron /usr/local/bin
 
-COPY --from=builder /opt/postgres_exporter/bin/ /opt/postgres_exporter/bin/
-
 RUN curl -L https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 -o /usr/local/bin/yq && \
     chmod +x /usr/local/bin/yq
