@@ -3,7 +3,6 @@ ARG PG_VERSION=latest
 FROM postgres:$PG_VERSION as builder
 
 ARG WAL_G_VERSION
-ARG POSTGRES_EXPORTER_VERSION
 ARG PG_ACOUSTID_VERSION
 
 RUN apt-get update && \
@@ -39,14 +38,6 @@ RUN mkdir -p /opt/wal-g/bin && \
     mv wal-g-pg-ubuntu-20.04-amd64 wal-g && \
     rm *.tar.gz
 
-RUN mkdir -p /opt/postgres_exporter/bin && \
-    cd /opt/postgres_exporter/bin && \
-    wget https://github.com/prometheus-community/postgres_exporter/releases/download/v${POSTGRES_EXPORTER_VERSION}/postgres_exporter-${POSTGRES_EXPORTER_VERSION}.linux-amd64.tar.gz && \
-    tar xvf postgres_exporter-${POSTGRES_EXPORTER_VERSION}.linux-amd64.tar.gz && \
-    mv postgres_exporter-${POSTGRES_EXPORTER_VERSION}.linux-amd64/postgres_exporter . && \
-    rm -rf postgres_exporter-${POSTGRES_EXPORTER_VERSION}.linux-amd64 && \
-    rm *.tar.gz
-
 FROM postgres:$PG_VERSION
 
 RUN apt-get update && \
@@ -56,11 +47,8 @@ RUN apt-get update && \
         python3-yaml \
         python3-requests \
         python3-psycopg2 \
-        postgresql-$PG_MAJOR-slony1-2 \
         pgbackrest \
         barman \
-        pgbackrest \
-        slony1-2-bin \
         dumb-init \
         curl \
         daemontools \
@@ -77,7 +65,7 @@ RUN curl https://install.citusdata.com/community/deb.sh | bash && \
 
 COPY setup_db.sh /docker-entrypoint-initdb.d/setup_db.sh
 
-COPY psql pg_dump pg_dumpall wal-g postgres_exporter /usr/local/bin/
+COPY psql pg_dump pg_dumpall wal-g /usr/local/bin/
 
 COPY scripts/ /postgresql-scripts/
 
