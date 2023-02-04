@@ -2,7 +2,6 @@ ARG PG_VERSION=latest
 
 FROM postgres:$PG_VERSION as builder
 
-ARG PATRONI_VERSION
 ARG WAL_G_VERSION
 ARG POSTGRES_EXPORTER_VERSION
 ARG PG_ACOUSTID_VERSION
@@ -23,7 +22,7 @@ RUN apt-get update && \
         postgresql-server-dev-$PG_MAJOR
 
 RUN python3 -m venv --system-site-packages /opt/patroni
-RUN /opt/patroni/bin/pip install "patroni[kubernetes]==$PATRONI_VERSION"
+RUN /opt/patroni/bin/pip install "patroni[kubernetes]==3.0.0"
 
 RUN python3 -m venv --system-site-packages /opt/yacron
 RUN /opt/yacron/bin/pip install yacron
@@ -72,6 +71,9 @@ RUN apt-get update && \
         sshpass \
         pv \
         gettext-base
+
+RUN curl https://install.citusdata.com/community/deb.sh | bash && \
+    apt-get install -y postgresql-$PG_MAJOR-citus-11.1
 
 COPY setup_db.sh /docker-entrypoint-initdb.d/setup_db.sh
 

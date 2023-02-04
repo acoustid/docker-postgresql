@@ -11,3 +11,4 @@ The image is based on the official "postgres" image, but includes a few other to
 And also database extensions:
 
   * [pg\_acoustid](https://github.com/acoustid/pg_acoustid)
+  * [Citus](https://www.citusdata.com/)
