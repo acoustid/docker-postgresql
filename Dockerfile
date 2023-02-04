@@ -72,7 +72,7 @@ RUN apt-get update && \
         pv \
         gettext-base
 
-RUN curl https://install.citusdata.com/community/deb.sh | sudo bash && \
+RUN curl https://install.citusdata.com/community/deb.sh | bash && \
     apt-get install -y postgresql-$PG_MAJOR-citus-11.1
 
 COPY setup_db.sh /docker-entrypoint-initdb.d/setup_db.sh
