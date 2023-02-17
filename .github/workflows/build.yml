@@ -44,7 +44,7 @@ jobs:
         tags: |
           type=semver,pattern={{version}}
           type=ref,event=branch
-          type=sha,prefix=pg${{ env.PG_VERSION }}-{{branch}}-
+          type=sha,prefix=pg${{ env.PG_VERSION }}-citus${{ env.CITUS_VERSION }}-{{branch}}-
 
     - name: Build and push Docker image
       uses: docker/build-push-action@v3
