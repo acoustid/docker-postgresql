@@ -55,6 +55,7 @@ jobs:
         labels: ${{ steps.meta.outputs.labels }}
         build-args: |
           PG_VERSION=${{ env.PG_VERSION }}
+          PATRONI_VERSION=${{ env.PATRONI_VERSION }}
           CITUS_VERSION=${{ env.CITUS_VERSION }}
           WAL_G_VERSION=${{ env.WAL_G_VERSION }}
           PG_ACOUSTID_VERSION=${{ env.PG_ACOUSTID_VERSION }}

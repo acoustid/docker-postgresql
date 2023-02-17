@@ -4,6 +4,7 @@ FROM postgres:$PG_VERSION as builder
 
 ARG WAL_G_VERSION
 ARG PG_ACOUSTID_VERSION
+ARG PATRONI_VERSION
 
 RUN apt-get update && \
     apt-get install -y \
@@ -21,7 +22,7 @@ RUN apt-get update && \
         postgresql-server-dev-$PG_MAJOR
 
 RUN python3 -m venv --system-site-packages /opt/patroni
-RUN /opt/patroni/bin/pip install "patroni[kubernetes]==3.0.0"
+RUN /opt/patroni/bin/pip install "patroni[kubernetes]==$PATRONI_VERSION"
 
 RUN python3 -m venv --system-site-packages /opt/yacron
 RUN /opt/yacron/bin/pip install yacron
@@ -80,8 +81,7 @@ COPY --from=builder /opt/wal-g/ /opt/wal-g/
 COPY --from=builder /opt/patroni/ /opt/patroni/
 
 RUN ln -s /opt/patroni/bin/patroni /usr/local/bin && \
-    ln -s /opt/patroni/bin/patronictl /usr/local/bin && \
-    ln -s /opt/patroni/bin/patroni_wale_restore /usr/local/bin
+    ln -s /opt/patroni/bin/patronictl /usr/local/bin
 
 COPY --from=builder /opt/yacron/ /opt/yacron/
 
