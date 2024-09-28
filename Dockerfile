@@ -62,8 +62,8 @@ RUN apt-get update && \
 
 ARG CITUS_VERSION
 
-RUN curl https://install.citusdata.com/community/deb.sh | bash && \
-    apt-get install -y postgresql-$PG_MAJOR-citus-$CITUS_VERSION
+# RUN curl https://install.citusdata.com/community/deb.sh | bash && \
+#     apt-get install -y postgresql-$PG_MAJOR-citus-$CITUS_VERSION
 
 COPY setup_db.sh /docker-entrypoint-initdb.d/setup_db.sh
 
