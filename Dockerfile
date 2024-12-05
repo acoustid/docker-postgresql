@@ -5,6 +5,7 @@ FROM postgres:$PG_VERSION as builder
 ARG WAL_G_VERSION
 ARG PG_ACOUSTID_VERSION
 ARG PATRONI_VERSION
+ARG DBMATE_VERSION
 
 RUN apt-get update && \
     apt-get install -y \
@@ -88,3 +89,6 @@ RUN ln -s /opt/yacron/bin/yacron /usr/local/bin
 
 RUN curl -L https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 -o /usr/local/bin/yq && \
     chmod +x /usr/local/bin/yq
+
+RUN curl -fsSL -o /usr/local/bin/dbmate https://github.com/amacneil/dbmate/releases/download/v$DBMATE_VERSION/dbmate-linux-amd64 && \
+    chmod +x /usr/local/bin/dbmate

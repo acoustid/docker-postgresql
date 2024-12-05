@@ -59,3 +59,4 @@ jobs:
           CITUS_VERSION=${{ env.CITUS_VERSION }}
           WAL_G_VERSION=${{ env.WAL_G_VERSION }}
           PG_ACOUSTID_VERSION=${{ env.PG_ACOUSTID_VERSION }}
+          DBMATE_VERSION=${{ env.DBMATE_VERSION }}
