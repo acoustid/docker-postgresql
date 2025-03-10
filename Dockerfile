@@ -60,11 +60,6 @@ RUN apt-get update && \
         pv \
         gettext-base
 
-ARG CITUS_VERSION
-
-# RUN curl https://install.citusdata.com/community/deb.sh | bash && \
-#     apt-get install -y postgresql-$PG_MAJOR-citus-$CITUS_VERSION
-
 COPY setup_db.sh /docker-entrypoint-initdb.d/setup_db.sh
 
 COPY psql pg_dump pg_dumpall wal-g /usr/local/bin/
@@ -88,7 +83,3 @@ RUN ln -s /opt/yacron/bin/yacron /usr/local/bin
 
 RUN curl -L https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 -o /usr/local/bin/yq && \
     chmod +x /usr/local/bin/yq
-
-ARG DBMATE_VERSION
-RUN curl -fsSL -o /usr/local/bin/dbmate https://github.com/amacneil/dbmate/releases/download/v$DBMATE_VERSION/dbmate-linux-amd64 && \
-    chmod +x /usr/local/bin/dbmate
