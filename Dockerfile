@@ -88,7 +88,3 @@ RUN ln -s /opt/yacron/bin/yacron /usr/local/bin
 
 RUN curl -L https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 -o /usr/local/bin/yq && \
     chmod +x /usr/local/bin/yq
-
-ARG DBMATE_VERSION
-RUN curl -fsSL -o /usr/local/bin/dbmate https://github.com/amacneil/dbmate/releases/download/v$DBMATE_VERSION/dbmate-linux-amd64 && \
-    chmod +x /usr/local/bin/dbmate
