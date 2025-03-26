@@ -58,7 +58,8 @@ RUN apt-get update && \
         lzop \
         sshpass \
         pv \
-        gettext-base
+        gettext-base \
+        postgresql-$PG_MAJOR-wal2json
 
 COPY setup_db.sh /docker-entrypoint-initdb.d/setup_db.sh
 
