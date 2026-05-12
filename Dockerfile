@@ -52,7 +52,7 @@ RUN apt-get update && \
         dumb-init \
         curl \
         daemontools \
-        liblz4-tool \
+        lz4 \
         less \
         vim \
         lzop \
