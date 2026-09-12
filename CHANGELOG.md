@@ -5,6 +5,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Added
+- pg_repack, so bloated tables can be rewritten online. VACUUM FULL holds an
+  ACCESS EXCLUSIVE lock for the whole rewrite, which takes the table offline;
+  pg_repack only needs brief locks at the start and end. Ships both the
+  extension and the client binary.
+
 ### Changed
 - Removed Stolon.
 
